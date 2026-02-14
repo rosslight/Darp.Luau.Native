@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseLocalProjectReference Condition="'$(UseLocalProjectReference)' == ''">true</UseLocalProjectReference>
+    <DarpLuauNativeVersion Condition="'$(DarpLuauNativeVersion)' == ''">0.0.0-local</DarpLuauNativeVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseLocalProjectReference)' == 'true'">
+    <ProjectReference Include="..\..\src\Darp.Luau.Native\Darp.Luau.Native.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalProjectReference)' != 'true'">
+    <PackageReference Include="Darp.Luau.Native" Version="$(DarpLuauNativeVersion)" />
+  </ItemGroup>
+</Project>

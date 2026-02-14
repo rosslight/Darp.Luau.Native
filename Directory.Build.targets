@@ -1,0 +1,16 @@
+<Project>
+  <Target Name="ResolveLuauCommitSha"
+          BeforeTargets="GenerateAssemblyInfo"
+          Condition="'$(LuauCommitSha)' == '' Or '$(LuauCommitSha)' == 'unknown'">
+    <Exec Command="git -C &quot;$(MSBuildThisFileDirectory)native/luau&quot; rev-parse --short=12 HEAD"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_LuauCommitShaRaw" />
+    </Exec>
+
+    <PropertyGroup Condition="'$(_LuauCommitShaRaw)' != ''">
+      <LuauCommitSha>$([System.String]::Copy('$(_LuauCommitShaRaw)').Trim())</LuauCommitSha>
+      <InformationalVersion>$(Version)+luau.$(LuauCommitSha)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+</Project>

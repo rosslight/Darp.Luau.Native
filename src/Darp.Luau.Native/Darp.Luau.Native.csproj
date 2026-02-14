@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;netstandard2.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+        <PackageId>Darp.Luau.Native</PackageId>
+        <Title>Darp Luau Native Bindings</Title>
+        <Description>Managed .NET P/Invoke bindings for Luau with prebuilt native runtimes.</Description>
+        <PackageTags>lua;luau;native;interop;pinvoke</PackageTags>
+        <Authors>rosslight GmbH</Authors>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>http://github.com/rosslight/darp.luau.native</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\artifacts\native\**\*.*"
+              Pack="true"
+              PackagePath="runtimes/%(RecursiveDir)native/"
+              Visible="false"
+              Condition="Exists('..\artifacts\native')" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="System.Memory" Version="4.6.3" />
+    </ItemGroup>
+</Project>

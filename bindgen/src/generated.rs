@@ -1172,6 +1172,104 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn luaL_sandboxthread(L: *mut lua_State);
 }
+pub type lua_CompileConstant = *mut ::std::os::raw::c_void;
+pub type lua_LibraryMemberTypeCallback = ::std::option::Option<
+    unsafe extern "C" fn(
+        library: *const ::std::os::raw::c_char,
+        member: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int,
+>;
+pub type lua_LibraryMemberConstantCallback = ::std::option::Option<
+    unsafe extern "C" fn(
+        library: *const ::std::os::raw::c_char,
+        member: *const ::std::os::raw::c_char,
+        constant: *mut lua_CompileConstant,
+    ),
+>;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lua_CompileOptions {
+    pub optimizationLevel: ::std::os::raw::c_int,
+    pub debugLevel: ::std::os::raw::c_int,
+    pub typeInfoLevel: ::std::os::raw::c_int,
+    pub coverageLevel: ::std::os::raw::c_int,
+    pub vectorLib: *const ::std::os::raw::c_char,
+    pub vectorCtor: *const ::std::os::raw::c_char,
+    pub vectorType: *const ::std::os::raw::c_char,
+    pub mutableGlobals: *const *const ::std::os::raw::c_char,
+    pub userdataTypes: *const *const ::std::os::raw::c_char,
+    pub librariesWithKnownMembers: *const *const ::std::os::raw::c_char,
+    pub libraryMemberTypeCb: lua_LibraryMemberTypeCallback,
+    pub libraryMemberConstantCb: lua_LibraryMemberConstantCallback,
+    pub disabledBuiltins: *const *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of lua_CompileOptions"][::std::mem::size_of::<lua_CompileOptions>() - 88usize];
+    ["Alignment of lua_CompileOptions"][::std::mem::align_of::<lua_CompileOptions>() - 8usize];
+    ["Offset of field: lua_CompileOptions::optimizationLevel"]
+        [::std::mem::offset_of!(lua_CompileOptions, optimizationLevel) - 0usize];
+    ["Offset of field: lua_CompileOptions::debugLevel"]
+        [::std::mem::offset_of!(lua_CompileOptions, debugLevel) - 4usize];
+    ["Offset of field: lua_CompileOptions::typeInfoLevel"]
+        [::std::mem::offset_of!(lua_CompileOptions, typeInfoLevel) - 8usize];
+    ["Offset of field: lua_CompileOptions::coverageLevel"]
+        [::std::mem::offset_of!(lua_CompileOptions, coverageLevel) - 12usize];
+    ["Offset of field: lua_CompileOptions::vectorLib"]
+        [::std::mem::offset_of!(lua_CompileOptions, vectorLib) - 16usize];
+    ["Offset of field: lua_CompileOptions::vectorCtor"]
+        [::std::mem::offset_of!(lua_CompileOptions, vectorCtor) - 24usize];
+    ["Offset of field: lua_CompileOptions::vectorType"]
+        [::std::mem::offset_of!(lua_CompileOptions, vectorType) - 32usize];
+    ["Offset of field: lua_CompileOptions::mutableGlobals"]
+        [::std::mem::offset_of!(lua_CompileOptions, mutableGlobals) - 40usize];
+    ["Offset of field: lua_CompileOptions::userdataTypes"]
+        [::std::mem::offset_of!(lua_CompileOptions, userdataTypes) - 48usize];
+    ["Offset of field: lua_CompileOptions::librariesWithKnownMembers"]
+        [::std::mem::offset_of!(lua_CompileOptions, librariesWithKnownMembers) - 56usize];
+    ["Offset of field: lua_CompileOptions::libraryMemberTypeCb"]
+        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberTypeCb) - 64usize];
+    ["Offset of field: lua_CompileOptions::libraryMemberConstantCb"]
+        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberConstantCb) - 72usize];
+    ["Offset of field: lua_CompileOptions::disabledBuiltins"]
+        [::std::mem::offset_of!(lua_CompileOptions, disabledBuiltins) - 80usize];
+};
+unsafe extern "C" {
+    pub fn luau_compile(
+        source: *const ::std::os::raw::c_char,
+        size: usize,
+        options: *mut lua_CompileOptions,
+        outsize: *mut usize,
+    ) -> *mut ::std::os::raw::c_char;
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_nil(constant: *mut lua_CompileConstant);
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_boolean(
+        constant: *mut lua_CompileConstant,
+        b: ::std::os::raw::c_int,
+    );
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_number(constant: *mut lua_CompileConstant, n: f64);
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_vector(
+        constant: *mut lua_CompileConstant,
+        x: f32,
+        y: f32,
+        z: f32,
+        w: f32,
+    );
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_string(
+        constant: *mut lua_CompileConstant,
+        s: *const ::std::os::raw::c_char,
+        l: usize,
+    );
+}
 pub type __builtin_va_list = *mut ::std::os::raw::c_char;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

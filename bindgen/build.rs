@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .header("../native/luau/VM/include/lua.h")
         .header("../native/luau/VM/include/luaconf.h")
         .header("../native/luau/VM/include/lualib.h")
+        .header("../native/luau/Compiler/include/luacode.h")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         })

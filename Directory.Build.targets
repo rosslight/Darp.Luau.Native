@@ -1,16 +1,34 @@
 <Project>
-  <Target Name="ResolveLuauCommitSha"
+  <Target Name="ResolveLuauVersion"
           BeforeTargets="GenerateAssemblyInfo"
-          Condition="'$(LuauCommitSha)' == '' Or '$(LuauCommitSha)' == 'unknown'">
-    <Exec Command="git -C &quot;$(MSBuildThisFileDirectory)native/luau&quot; rev-parse --short=12 HEAD"
+          Condition="'$(LuauVersion)' == '' Or '$(LuauVersion)' == 'unknown'">
+
+    <!-- Try exact tag on HEAD -->
+    <Exec Command="git -C &quot;$(MSBuildThisFileDirectory)native/luau&quot; describe --tags --exact-match"
           ConsoleToMSBuild="true"
           IgnoreExitCode="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_LuauCommitShaRaw" />
+      <Output TaskParameter="ConsoleOutput" PropertyName="_LuauTagRaw" />
     </Exec>
+    <PropertyGroup>
+      <_LuauTag>$([System.String]::Copy('$(_LuauTagRaw)').Trim())</_LuauTag>
+    </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_LuauCommitShaRaw)' != ''">
-      <LuauCommitSha>$([System.String]::Copy('$(_LuauCommitShaRaw)').Trim())</LuauCommitSha>
-      <InformationalVersion>$(Version)+luau.$(LuauCommitSha)</InformationalVersion>
+    <!-- If no exact tag, fall back to short sha -->
+    <Exec Condition="'$(_LuauTag)' == ''"
+          Command="git -C &quot;$(MSBuildThisFileDirectory)native/luau&quot; rev-parse --short=12 HEAD"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_LuauShaRaw" />
+    </Exec>
+    <PropertyGroup>
+      <_LuauSha>$([System.String]::Copy('$(_LuauShaRaw)').Trim())</_LuauSha>
+
+      <!-- Pick tag if present, otherwise sha -->
+      <LuauVersion Condition="'$(_LuauTag)' != ''">$(_LuauTag)</LuauVersion>
+      <LuauVersion Condition="'$(_LuauTag)' == '' And '$(_LuauSha)' != ''">$(_LuauSha)</LuauVersion>
+
+      <!-- Example: 1.2.3+luau.v0.641  OR 1.2.3+luau.abcdef123456 -->
+      <InformationalVersion Condition="'$(LuauVersion)' != ''">$(Version)+luau.$(LuauVersion)</InformationalVersion>
     </PropertyGroup>
   </Target>
 </Project>

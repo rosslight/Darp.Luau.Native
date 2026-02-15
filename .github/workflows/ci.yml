@@ -30,6 +30,12 @@ jobs:
         shell: pwsh
         run: ./scripts/build-native.ps1 -OutputDir "artifacts/native/linux-x64" -RuntimeId "linux-x64" -Generator "Ninja"
 
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-packages
+          path: artifacts/native/linux-x64/*
+
       - name: Pack NuGet
         run: dotnet pack src/Darp.Luau.Native/Darp.Luau.Native.csproj -c Release -o artifacts/packages -p:Version=${PACKAGE_VERSION}
 

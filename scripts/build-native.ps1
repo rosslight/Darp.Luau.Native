@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$OutputDir,
   [string]$Configuration = "Release",
-  [string]$Generator = "Visual Studio 18 2026",
+  [string]$Generator = "",  # empty = use CMake's default generator
   [string]$Platform = "x64"
 )
 
@@ -27,7 +27,9 @@ if (Test-Path $BuildDir) {
   mkdir $BuildDir
 }
 
-cmake -S $SourceDir -B $BuildDir -G $Generator -A $Platform
+$cmakeArgs = @("-S", $SourceDir, "-B", $BuildDir, "-A", $Platform)
+if ($Generator) { $cmakeArgs += "-G", $Generator }
+& cmake @cmakeArgs
 cmake --build $BuildDir --config $Configuration --parallel
 
 $DllPath = Join-Path $BuildDir "$Configuration\luau.dll"

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  linux-pack-and-integration:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      PACKAGE_VERSION: 0.0.0-ci.${{ github.run_number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build native runtime (linux-x64)
+        run: ./scripts/build-native.sh "artifacts/native/linux-x64"
+
+      - name: Pack NuGet
+        run: dotnet pack src/Darp.Luau.Native/Darp.Luau.Native.csproj -c Release -o artifacts/packages -p:Version=${PACKAGE_VERSION}
+
+      - name: Restore integration runner with package feed
+        run: dotnet restore tests/Darp.Luau.Native.IntegrationTests/Darp.Luau.Native.IntegrationTests.csproj --source "$PWD/artifacts/packages" --source "https://api.nuget.org/v3/index.json" -p:UseLocalProjectReference=false -p:DarpLuauNativeVersion=${PACKAGE_VERSION}
+
+      - name: Run integration runner against packed package
+        run: dotnet run --project tests/Darp.Luau.Native.IntegrationTests/Darp.Luau.Native.IntegrationTests.csproj -c Release --no-restore -p:UseLocalProjectReference=false -p:DarpLuauNativeVersion=${PACKAGE_VERSION}
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-packages
+          path: artifacts/packages/*.nupkg

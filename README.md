@@ -17,10 +17,19 @@ Managed .NET bindings for Luau with prebuilt native runtimes per RID.
 ./bindgen/generate_bindings.ps1
 ```
 
-Prerequisites:
+## Build locally
 
-- Rust toolchain (`cargo`) via [rustup](https://rustup.rs/)
-- LLVM/Clang (`libclang`) available on `PATH` or via `LIBCLANG_PATH`
+- Windows
+
+```powershell
+./scripts/build-native.ps1 artifacts/native -Platform x64 -Configuration Release
+```
+
+- Linux/macOS
+
+```bash
+./scripts/build-native.sh artifacts/native x64
+```
 
 ## Pack
 

@@ -26,11 +26,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\artifacts\native\**\*.*"
+        <None Include="../../artifacts/native/**/*.*"
               Pack="true"
               PackagePath="runtimes/%(RecursiveDir)native/"
-              Visible="false"
-              Condition="Exists('..\artifacts\native')" />
+              Visible="true"
+              Condition="Exists('../../artifacts/native')" >
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None> 
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

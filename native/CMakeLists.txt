@@ -1,28 +1,46 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
+project(luau_monolithic_dll LANGUAGES C CXX)
 
-project(DarpLuauNative LANGUAGES C CXX)
+# Build Luau as STATIC libs (important: no cross-DLL internals)
+set(LUAU_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(LUAU_BUILD_CLI OFF CACHE BOOL "" FORCE)
+set(LUAU_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LUAU_BUILD_WEB OFF CACHE BOOL "" FORCE)
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/luau/CMakeLists.txt")
-    message(FATAL_ERROR "Expected Luau submodule at native/luau. Run: git submodule update --init --recursive")
-endif()
-
-set(LUAU_BUILD_CLI OFF CACHE BOOL "Disable Luau CLI binaries" FORCE)
-set(LUAU_BUILD_TESTS OFF CACHE BOOL "Disable Luau tests" FORCE)
-set(LUAU_BUILD_WEB OFF CACHE BOOL "Disable Luau web target" FORCE)
-set(LUAU_BUILD_SHARED ON CACHE BOOL "Build Luau shared libraries" FORCE)
-set(LUAU_EXTERN_C ON CACHE BOOL "Export Luau C ABI with extern C" FORCE)
-
-set(LUAU_DOTNET_RID "" CACHE STRING "RID used for staged install path")
-if(LUAU_DOTNET_RID STREQUAL "")
-    message(FATAL_ERROR "LUAU_DOTNET_RID must be provided, e.g. -DLUAU_DOTNET_RID=win-x64")
-endif()
+# We will force C ABI + dllexport ourselves to avoid fighting Luau's built-in settings
+set(LUAU_EXTERN_C OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(luau)
 
-# Use a stable binary name for VM so managed declarations can target "luau".
-set_target_properties(Luau.VM PROPERTIES OUTPUT_NAME luau)
+if (MSVC)
+  set(LUAU_EXPORT_C "extern \"C\" __declspec(dllexport)")
+else()
+  set(LUAU_EXPORT_C "extern \"C\" __attribute__((visibility(\"default\")))")
+endif()
 
-install(TARGETS Luau.VM Luau.Common
-    RUNTIME DESTINATION "${LUAU_DOTNET_RID}"
-    LIBRARY DESTINATION "${LUAU_DOTNET_RID}"
-    ARCHIVE DESTINATION "${LUAU_DOTNET_RID}")
+# VM exports: lua_* uses LUA_API; luaL_* + luaopen_* use LUALIB_API
+target_compile_definitions(Luau.VM PUBLIC
+  "LUA_API=${LUAU_EXPORT_C}"
+  "LUALIB_API=${LUAU_EXPORT_C}"
+)
+
+# Compiler exports: luau_compile uses LUACODE_API
+target_compile_definitions(Luau.Compiler PUBLIC
+  "LUACODE_API=${LUAU_EXPORT_C}"
+)
+
+# Require runtime exports are declared with LUALIB_API in Require.h
+target_compile_definitions(Luau.Require PUBLIC
+  "LUALIB_API=${LUAU_EXPORT_C}"
+)
+
+add_library(luau SHARED exports.cpp)
+target_link_libraries(luau PRIVATE Luau.VM Luau.Compiler Luau.Require)
+
+if (MSVC)
+  target_link_options(luau PRIVATE
+    "/WHOLEARCHIVE:$<TARGET_LINKER_FILE:Luau.VM>"
+    "/WHOLEARCHIVE:$<TARGET_LINKER_FILE:Luau.Compiler>"
+    "/WHOLEARCHIVE:$<TARGET_LINKER_FILE:Luau.Require>"
+  )
+endif()

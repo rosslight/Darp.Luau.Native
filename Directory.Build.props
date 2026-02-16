@@ -6,6 +6,6 @@
 
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    <Version>0.1.0+luau.0.708</Version>
+    <Version>0.2.0+luau.0.708</Version>
   </PropertyGroup>
 </Project>

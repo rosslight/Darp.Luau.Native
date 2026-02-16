@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0+luau.0.708](https://github.com/rosslight/darp.luau.native/compare/v0.1.0+luau.0.708...v0.2.0+luau.0.708) (2026-02-16)
+
+
+### Features
+
+* Add missing functions and macros ([4d7aaad](https://github.com/rosslight/darp.luau.native/commit/4d7aaad62db63d9fd1a91b15382ac01125ebd311))
+
 ## [0.1.0+luau.0.708](https://github.com/rosslight/darp.luau.native/compare/v0.0.0+luau.0.708...v0.1.0+luau.0.708) (2026-02-15)
 
 

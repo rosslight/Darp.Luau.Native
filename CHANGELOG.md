@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0+luau.0.708](https://github.com/rosslight/Darp.Luau.Native/compare/v0.3.0+luau.0.708...v0.4.0+luau.0.708) (2026-02-26)
+
+
+### Features
+
+* Export require functions ([#6](https://github.com/rosslight/Darp.Luau.Native/issues/6)) ([a9bad18](https://github.com/rosslight/Darp.Luau.Native/commit/a9bad182ae90c882520698c4bdfd627a8a2a35b6))
+
+
+### Bug Fixes
+
+* Mark lua_error as obsolete to avoid misuse ([#4](https://github.com/rosslight/Darp.Luau.Native/issues/4)) ([16a9dcb](https://github.com/rosslight/Darp.Luau.Native/commit/16a9dcb7950c9c9e8ef1a4d722868da244c96696))
+
 ## [0.3.0+luau.0.708](https://github.com/rosslight/Darp.Luau.Native/compare/v0.2.0+luau.0.708...v0.3.0+luau.0.708) (2026-02-16)
 
 

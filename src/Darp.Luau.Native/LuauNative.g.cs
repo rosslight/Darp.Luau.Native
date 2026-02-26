@@ -606,6 +606,24 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "luau_set_compile_constant_string", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luau_set_compile_constant_string(void** constant, byte* s, nuint l);
 
+        [DllImport(__DllName, EntryPoint = "luarequire_pushrequire", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luarequire_pushrequire(lua_State* L, delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, void* ctx);
+
+        [DllImport(__DllName, EntryPoint = "luaopen_require", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void luaopen_require(lua_State* L, delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, void* ctx);
+
+        [DllImport(__DllName, EntryPoint = "luarequire_pushproxyrequire", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luarequire_pushproxyrequire(lua_State* L, delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, void* ctx);
+
+        [DllImport(__DllName, EntryPoint = "luarequire_registermodule", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luarequire_registermodule(lua_State* L);
+
+        [DllImport(__DllName, EntryPoint = "luarequire_clearcacheentry", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luarequire_clearcacheentry(lua_State* L);
+
+        [DllImport(__DllName, EntryPoint = "luarequire_clearcache", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luarequire_clearcache(lua_State* L);
+
         [DllImport(__DllName, EntryPoint = "luau_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luau_free(void* ptr);
 
@@ -685,6 +703,27 @@ namespace Darp.Luau.Native
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public unsafe partial struct luarequire_Configuration
+    {
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, bool> is_require_allowed;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, luarequire_NavigateResult> reset;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, luarequire_NavigateResult> jump_to_alias;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, luarequire_NavigateResult> to_alias_override;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, luarequire_NavigateResult> to_alias_fallback;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, luarequire_NavigateResult> to_parent;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, luarequire_NavigateResult> to_child;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, bool> is_module_present;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, nuint, nuint*, luarequire_WriteResult> get_chunkname;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, nuint, nuint*, luarequire_WriteResult> get_loadname;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, nuint, nuint*, luarequire_WriteResult> get_cache_key;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, luarequire_ConfigStatus> get_config_status;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, nuint, nuint*, luarequire_WriteResult> get_alias;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, nuint, nuint*, luarequire_WriteResult> get_config;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, int> get_luau_config_timeout;
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, byte*, int> load;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe partial struct TString
     {
         public byte _address;
@@ -741,6 +780,28 @@ namespace Darp.Luau.Native
         LUA_GCSETGOAL = 7,
         LUA_GCSETSTEPMUL = 8,
         LUA_GCSETSTEPSIZE = 9,
+    }
+
+    public enum luarequire_NavigateResult : int
+    {
+        NAVIGATE_SUCCESS = 0,
+        NAVIGATE_AMBIGUOUS = 1,
+        NAVIGATE_NOT_FOUND = 2,
+    }
+
+    public enum luarequire_WriteResult : int
+    {
+        WRITE_SUCCESS = 0,
+        WRITE_BUFFER_TOO_SMALL = 1,
+        WRITE_FAILURE = 2,
+    }
+
+    public enum luarequire_ConfigStatus : int
+    {
+        CONFIG_ABSENT = 0,
+        CONFIG_AMBIGUOUS = 1,
+        CONFIG_PRESENT_JSON = 2,
+        CONFIG_PRESENT_LUAU = 3,
     }
 
 

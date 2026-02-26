@@ -3,11 +3,11 @@ use std::error::Error;
 fn main() -> Result<(), Box<dyn Error>> {
     // using bindgen, generate binding code
     bindgen::Builder::default()
-        .header("../native/luau/VM/include/lua.h")
-        .header("../native/luau/VM/include/luaconf.h")
-        .header("../native/luau/VM/include/lualib.h")
-        .header("../native/luau/Compiler/include/luacode.h")
-        .header("../native/include/luau_exports.h")
+        .header("../native/include/luau_api.h")
+        .clang_arg("-I../native/include")
+        .clang_arg("-I../native/luau/VM/include")
+        .clang_arg("-I../native/luau/Compiler/include")
+        .clang_arg("-I../native/luau/Require/include")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         })

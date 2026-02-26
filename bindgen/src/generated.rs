@@ -50,6 +50,9 @@ pub const LUA_UTF8LIBNAME: &[u8; 5] = b"utf8\0";
 pub const LUA_MATHLIBNAME: &[u8; 5] = b"math\0";
 pub const LUA_DBLIBNAME: &[u8; 6] = b"debug\0";
 pub const LUA_VECLIBNAME: &[u8; 7] = b"vector\0";
+pub const __bool_true_false_are_defined: u32 = 1;
+pub const true_: u32 = 1;
+pub const false_: u32 = 0;
 pub type __gnuc_va_list = __builtin_va_list;
 pub type va_list = __builtin_va_list;
 pub type wchar_t = ::std::os::raw::c_ushort;
@@ -1269,6 +1272,221 @@ unsafe extern "C" {
         s: *const ::std::os::raw::c_char,
         l: usize,
     );
+}
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum luarequire_NavigateResult {
+    NAVIGATE_SUCCESS = 0,
+    NAVIGATE_AMBIGUOUS = 1,
+    NAVIGATE_NOT_FOUND = 2,
+}
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum luarequire_WriteResult {
+    WRITE_SUCCESS = 0,
+    WRITE_BUFFER_TOO_SMALL = 1,
+    WRITE_FAILURE = 2,
+}
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum luarequire_ConfigStatus {
+    CONFIG_ABSENT = 0,
+    CONFIG_AMBIGUOUS = 1,
+    CONFIG_PRESENT_JSON = 2,
+    CONFIG_PRESENT_LUAU = 3,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct luarequire_Configuration {
+    pub is_require_allowed: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            requirer_chunkname: *const ::std::os::raw::c_char,
+        ) -> bool,
+    >,
+    pub reset: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            requirer_chunkname: *const ::std::os::raw::c_char,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub jump_to_alias: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            path: *const ::std::os::raw::c_char,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub to_alias_override: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            alias_unprefixed: *const ::std::os::raw::c_char,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub to_alias_fallback: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            alias_unprefixed: *const ::std::os::raw::c_char,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub to_parent: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub to_child: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            name: *const ::std::os::raw::c_char,
+        ) -> luarequire_NavigateResult,
+    >,
+    pub is_module_present: ::std::option::Option<
+        unsafe extern "C" fn(L: *mut lua_State, ctx: *mut ::std::os::raw::c_void) -> bool,
+    >,
+    pub get_chunkname: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            buffer: *mut ::std::os::raw::c_char,
+            buffer_size: usize,
+            size_out: *mut usize,
+        ) -> luarequire_WriteResult,
+    >,
+    pub get_loadname: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            buffer: *mut ::std::os::raw::c_char,
+            buffer_size: usize,
+            size_out: *mut usize,
+        ) -> luarequire_WriteResult,
+    >,
+    pub get_cache_key: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            buffer: *mut ::std::os::raw::c_char,
+            buffer_size: usize,
+            size_out: *mut usize,
+        ) -> luarequire_WriteResult,
+    >,
+    pub get_config_status: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+        ) -> luarequire_ConfigStatus,
+    >,
+    pub get_alias: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            alias: *const ::std::os::raw::c_char,
+            buffer: *mut ::std::os::raw::c_char,
+            buffer_size: usize,
+            size_out: *mut usize,
+        ) -> luarequire_WriteResult,
+    >,
+    pub get_config: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            buffer: *mut ::std::os::raw::c_char,
+            buffer_size: usize,
+            size_out: *mut usize,
+        ) -> luarequire_WriteResult,
+    >,
+    pub get_luau_config_timeout: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+        ) -> ::std::os::raw::c_int,
+    >,
+    pub load: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            ctx: *mut ::std::os::raw::c_void,
+            path: *const ::std::os::raw::c_char,
+            chunkname: *const ::std::os::raw::c_char,
+            loadname: *const ::std::os::raw::c_char,
+        ) -> ::std::os::raw::c_int,
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of luarequire_Configuration"]
+        [::std::mem::size_of::<luarequire_Configuration>() - 128usize];
+    ["Alignment of luarequire_Configuration"]
+        [::std::mem::align_of::<luarequire_Configuration>() - 8usize];
+    ["Offset of field: luarequire_Configuration::is_require_allowed"]
+        [::std::mem::offset_of!(luarequire_Configuration, is_require_allowed) - 0usize];
+    ["Offset of field: luarequire_Configuration::reset"]
+        [::std::mem::offset_of!(luarequire_Configuration, reset) - 8usize];
+    ["Offset of field: luarequire_Configuration::jump_to_alias"]
+        [::std::mem::offset_of!(luarequire_Configuration, jump_to_alias) - 16usize];
+    ["Offset of field: luarequire_Configuration::to_alias_override"]
+        [::std::mem::offset_of!(luarequire_Configuration, to_alias_override) - 24usize];
+    ["Offset of field: luarequire_Configuration::to_alias_fallback"]
+        [::std::mem::offset_of!(luarequire_Configuration, to_alias_fallback) - 32usize];
+    ["Offset of field: luarequire_Configuration::to_parent"]
+        [::std::mem::offset_of!(luarequire_Configuration, to_parent) - 40usize];
+    ["Offset of field: luarequire_Configuration::to_child"]
+        [::std::mem::offset_of!(luarequire_Configuration, to_child) - 48usize];
+    ["Offset of field: luarequire_Configuration::is_module_present"]
+        [::std::mem::offset_of!(luarequire_Configuration, is_module_present) - 56usize];
+    ["Offset of field: luarequire_Configuration::get_chunkname"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_chunkname) - 64usize];
+    ["Offset of field: luarequire_Configuration::get_loadname"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_loadname) - 72usize];
+    ["Offset of field: luarequire_Configuration::get_cache_key"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_cache_key) - 80usize];
+    ["Offset of field: luarequire_Configuration::get_config_status"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_config_status) - 88usize];
+    ["Offset of field: luarequire_Configuration::get_alias"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_alias) - 96usize];
+    ["Offset of field: luarequire_Configuration::get_config"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_config) - 104usize];
+    ["Offset of field: luarequire_Configuration::get_luau_config_timeout"]
+        [::std::mem::offset_of!(luarequire_Configuration, get_luau_config_timeout) - 112usize];
+    ["Offset of field: luarequire_Configuration::load"]
+        [::std::mem::offset_of!(luarequire_Configuration, load) - 120usize];
+};
+pub type luarequire_Configuration_init =
+    ::std::option::Option<unsafe extern "C" fn(config: *mut luarequire_Configuration)>;
+unsafe extern "C" {
+    pub fn luarequire_pushrequire(
+        L: *mut lua_State,
+        config_init: luarequire_Configuration_init,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luaopen_require(
+        L: *mut lua_State,
+        config_init: luarequire_Configuration_init,
+        ctx: *mut ::std::os::raw::c_void,
+    );
+}
+unsafe extern "C" {
+    pub fn luarequire_pushproxyrequire(
+        L: *mut lua_State,
+        config_init: luarequire_Configuration_init,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luarequire_registermodule(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luarequire_clearcacheentry(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luarequire_clearcache(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);

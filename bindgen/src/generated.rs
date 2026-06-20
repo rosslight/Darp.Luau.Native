@@ -127,9 +127,11 @@ pub const LUA_STRLIBNAME: &[u8; 7] = b"string\0";
 pub const LUA_BITLIBNAME: &[u8; 6] = b"bit32\0";
 pub const LUA_BUFFERLIBNAME: &[u8; 7] = b"buffer\0";
 pub const LUA_UTF8LIBNAME: &[u8; 5] = b"utf8\0";
+pub const LUA_CLASSLIBNAME: &[u8; 6] = b"class\0";
 pub const LUA_MATHLIBNAME: &[u8; 5] = b"math\0";
 pub const LUA_DBLIBNAME: &[u8; 6] = b"debug\0";
 pub const LUA_VECLIBNAME: &[u8; 7] = b"vector\0";
+pub const LUA_INTLIBNAME: &[u8; 8] = b"integer\0";
 pub const __bool_true_false_are_defined: u32 = 1;
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
@@ -283,7 +285,7 @@ pub type lua_Alloc = ::std::option::Option<
     ) -> *mut ::std::os::raw::c_void,
 >;
 impl lua_Type {
-    pub const LUA_T_COUNT: lua_Type = lua_Type::LUA_TPROTO;
+    pub const LUA_T_COUNT: lua_Type = lua_Type::LUA_TDEADKEY;
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -292,16 +294,19 @@ pub enum lua_Type {
     LUA_TBOOLEAN = 1,
     LUA_TLIGHTUSERDATA = 2,
     LUA_TNUMBER = 3,
-    LUA_TVECTOR = 4,
-    LUA_TSTRING = 5,
-    LUA_TTABLE = 6,
-    LUA_TFUNCTION = 7,
-    LUA_TUSERDATA = 8,
-    LUA_TTHREAD = 9,
-    LUA_TBUFFER = 10,
-    LUA_TPROTO = 11,
-    LUA_TUPVAL = 12,
-    LUA_TDEADKEY = 13,
+    LUA_TINTEGER = 4,
+    LUA_TVECTOR = 5,
+    LUA_TSTRING = 6,
+    LUA_TTABLE = 7,
+    LUA_TFUNCTION = 8,
+    LUA_TUSERDATA = 9,
+    LUA_TTHREAD = 10,
+    LUA_TBUFFER = 11,
+    LUA_TCLASS = 12,
+    LUA_TOBJECT = 13,
+    LUA_TDEADKEY = 14,
+    LUA_TPROTO = 15,
+    LUA_TUPVAL = 16,
 }
 pub type lua_Number = f64;
 pub type lua_Integer = ::std::os::raw::c_int;
@@ -362,6 +367,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_isstring(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_isinteger64(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn lua_iscfunction(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
@@ -428,6 +436,13 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_toboolean(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_tointeger64(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+        isinteger: *mut ::std::os::raw::c_int,
+    ) -> i64;
 }
 unsafe extern "C" {
     pub fn lua_tolstring(
@@ -522,6 +537,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_pushinteger(L: *mut lua_State, n: ::std::os::raw::c_int);
+}
+unsafe extern "C" {
+    pub fn lua_pushinteger64(L: *mut lua_State, n: i64);
 }
 unsafe extern "C" {
     pub fn lua_pushunsigned(L: *mut lua_State, n: ::std::os::raw::c_uint);
@@ -836,6 +854,67 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn lua_getuserdatametatable(L: *mut lua_State, tag: ::std::os::raw::c_int);
 }
+pub type lua_UserdataDirectAccess = ::std::option::Option<
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        data: *mut ::std::os::raw::c_void,
+        atom: ::std::os::raw::c_int,
+        cachedslot: *mut u16,
+        utag: ::std::os::raw::c_int,
+    ),
+>;
+pub type lua_UserdataDirectNamecall = ::std::option::Option<
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        data: *mut ::std::os::raw::c_void,
+        atom: ::std::os::raw::c_int,
+        cachedslot: *mut u16,
+        utag: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int,
+>;
+unsafe extern "C" {
+    pub fn lua_registeruserdatadirectaccess(
+        L: *mut lua_State,
+        tag: ::std::os::raw::c_int,
+        get: lua_UserdataDirectAccess,
+        set: lua_UserdataDirectAccess,
+        namecall: lua_UserdataDirectNamecall,
+    ) -> ::std::os::raw::c_int;
+}
+pub type lua_UserdataDirectFieldGet = ::std::option::Option<
+    unsafe extern "C" fn(ud: *mut ::std::os::raw::c_void, result: *mut ::std::os::raw::c_void),
+>;
+unsafe extern "C" {
+    pub fn lua_registeruserdatadirectfieldget(
+        L: *mut lua_State,
+        tag: ::std::os::raw::c_int,
+        field: *const ::std::os::raw::c_char,
+        fn_: lua_UserdataDirectFieldGet,
+    );
+}
+unsafe extern "C" {
+    pub fn lua_userdatadirectfield_setnumber(result: *mut ::std::os::raw::c_void, n: f64);
+}
+unsafe extern "C" {
+    pub fn lua_userdatadirectfield_setvector(
+        result: *mut ::std::os::raw::c_void,
+        x: f32,
+        y: f32,
+        z: f32,
+    );
+}
+unsafe extern "C" {
+    pub fn lua_userdatadirectfield_setboolean(
+        result: *mut ::std::os::raw::c_void,
+        b: ::std::os::raw::c_int,
+    );
+}
+unsafe extern "C" {
+    pub fn lua_userdatadirectfield_setinteger64(result: *mut ::std::os::raw::c_void, n: i64);
+}
+unsafe extern "C" {
+    pub fn lua_userdatadirectfield_setnil(result: *mut ::std::os::raw::c_void);
+}
 unsafe extern "C" {
     pub fn lua_setlightuserdataname(
         L: *mut lua_State,
@@ -1146,11 +1225,17 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn luaL_checkinteger64(L: *mut lua_State, numArg: ::std::os::raw::c_int) -> i64;
+}
+unsafe extern "C" {
     pub fn luaL_optinteger(
         L: *mut lua_State,
         nArg: ::std::os::raw::c_int,
         def: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luaL_optinteger64(L: *mut lua_State, nArg: ::std::os::raw::c_int, def: i64) -> i64;
 }
 unsafe extern "C" {
     pub fn luaL_checkunsigned(
@@ -1254,6 +1339,14 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn luaL_pcallyieldable(
+        L: *mut lua_State,
+        nargs: ::std::os::raw::c_int,
+        nresults: ::std::os::raw::c_int,
+        errfunc: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn luaL_traceback(
         L: *mut lua_State,
         L1: *mut lua_State,
@@ -1335,6 +1428,9 @@ unsafe extern "C" {
     pub fn luaopen_utf8(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn luaopen_class(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn luaopen_math(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -1342,6 +1438,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn luaopen_vector(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luaopen_integer(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn luaL_openlibs(L: *mut lua_State);
@@ -1433,6 +1532,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn luau_set_compile_constant_number(constant: *mut lua_CompileConstant, n: f64);
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_integer64(constant: *mut lua_CompileConstant, l: i64);
 }
 unsafe extern "C" {
     pub fn luau_set_compile_constant_vector(

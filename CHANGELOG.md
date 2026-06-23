@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0+luau.0.726](https://github.com/rosslight/Darp.Luau.Native/compare/v0.4.1+luau.0.726...v0.5.0+luau.0.726) (2026-06-23)
+
+
+### Features
+
+* Add trampoline functions for callbacks ([#12](https://github.com/rosslight/Darp.Luau.Native/issues/12)) ([42da4cd](https://github.com/rosslight/Darp.Luau.Native/commit/42da4cd225f5183ebae66a4cc1ea0fbc61e7a188))
+
+
+### Dependencies
+
+* **luau:** bump to 0.726 ([#10](https://github.com/rosslight/Darp.Luau.Native/issues/10)) ([c8aa24d](https://github.com/rosslight/Darp.Luau.Native/commit/c8aa24d0457baed98a91a4463e2f309f7db1775a))
+
 ## [0.4.1+luau.0.712](https://github.com/rosslight/Darp.Luau.Native/compare/v0.4.0+luau.0.712...v0.4.1+luau.0.712) (2026-03-18)
 
 

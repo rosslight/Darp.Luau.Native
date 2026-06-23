@@ -15,10 +15,10 @@ jobs:
         include:
           - rid: win-x64
             runner: windows-latest
-            generator: Visual Studio 17 2022
+            generator: Visual Studio 18 2026
           - rid: win-arm64
             runner: windows-latest
-            generator: Visual Studio 17 2022
+            generator: Visual Studio 18 2026
           - rid: linux-x64
             runner: ubuntu-latest
             generator: Ninja

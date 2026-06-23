@@ -1767,8 +1767,61 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn luarequire_clearcache(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
+pub const DARP_LUAU_REQUIRE_PROXY: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_REQUIRE_PROXY;
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_1 {
+    DARP_LUAU_REQUIRE_PROXY = -2,
+}
+pub type darp_luau_callback = ::std::option::Option<
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int,
+>;
+pub type darp_luau_require_load_callback = ::std::option::Option<
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        ctx: *mut ::std::os::raw::c_void,
+        path: *const ::std::os::raw::c_char,
+        chunkname: *const ::std::os::raw::c_char,
+        loadname: *const ::std::os::raw::c_char,
+    ) -> ::std::os::raw::c_int,
+>;
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);
+}
+unsafe extern "C" {
+    pub fn darp_luau_pushcallback(
+        L: *mut lua_State,
+        callback: darp_luau_callback,
+        ctx: *mut ::std::os::raw::c_void,
+        debugname: *const ::std::os::raw::c_char,
+    );
+}
+unsafe extern "C" {
+    pub fn darp_luau_pushrequirecallback(
+        L: *mut lua_State,
+        callback: darp_luau_callback,
+        ctx: *mut ::std::os::raw::c_void,
+        debugname: *const ::std::os::raw::c_char,
+    );
+}
+unsafe extern "C" {
+    pub fn darp_luau_newrequirecontext(
+        config_init: luarequire_Configuration_init,
+        load_callback: darp_luau_require_load_callback,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
+    pub fn darp_luau_freerequirecontext(context: *mut ::std::os::raw::c_void);
+}
+unsafe extern "C" {
+    pub fn darp_luau_pushproxyrequire(
+        L: *mut lua_State,
+        context: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
 }
 pub type __builtin_va_list = [__va_list_tag; 1usize];
 #[repr(C)]

@@ -37,7 +37,7 @@ target_compile_definitions(Luau.Require PUBLIC
   "LUALIB_API=${LUAU_EXPORT_C}"
 )
 
-add_library(luau SHARED exports.c)
+add_library(luau SHARED exports.cpp)
 target_include_directories(luau PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(luau PRIVATE Luau.VM Luau.Compiler Luau.Require)
 

@@ -680,6 +680,21 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "luau_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luau_free(void* ptr);
 
+        [DllImport(__DllName, EntryPoint = "darp_luau_pushcallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_pushcallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, byte* debugname);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_pushrequirecallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_pushrequirecallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, byte* debugname);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_newrequirecontext", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void* darp_luau_newrequirecontext(delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, byte*, int> load_callback, void* ctx);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_freerequirecontext", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_freerequirecontext(void* context);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_pushproxyrequire", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int darp_luau_pushproxyrequire(lua_State* L, void* context);
+
 
     }
 

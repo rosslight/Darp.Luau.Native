@@ -687,13 +687,13 @@ namespace Darp.Luau.Native
         public static extern void darp_luau_pushrequirecallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, byte* debugname);
 
         [DllImport(__DllName, EntryPoint = "darp_luau_newrequirecontext", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void* darp_luau_newrequirecontext(delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, byte*, int> load_callback, void* ctx);
+        public static extern darp_luau_require_context_data* darp_luau_newrequirecontext(delegate* unmanaged[Cdecl]<luarequire_Configuration*, void> config_init, delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, byte*, int> load_callback, void* ctx);
 
         [DllImport(__DllName, EntryPoint = "darp_luau_freerequirecontext", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void darp_luau_freerequirecontext(void* context);
+        public static extern void darp_luau_freerequirecontext(darp_luau_require_context_data* context);
 
         [DllImport(__DllName, EntryPoint = "darp_luau_pushproxyrequire", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int darp_luau_pushproxyrequire(lua_State* L, void* context);
+        public static extern int darp_luau_pushproxyrequire(lua_State* L, darp_luau_require_context_data* context);
 
 
     }
@@ -789,6 +789,12 @@ namespace Darp.Luau.Native
         public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, nuint, nuint*, luarequire_WriteResult> get_config;
         public delegate* unmanaged[Cdecl]<lua_State*, void*, int> get_luau_config_timeout;
         public delegate* unmanaged[Cdecl]<lua_State*, void*, byte*, byte*, byte*, int> load;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe partial struct darp_luau_require_context_data
+    {
+        public fixed byte _unused[1];
     }
 
     [StructLayout(LayoutKind.Sequential)]

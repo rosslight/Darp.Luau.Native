@@ -209,7 +209,7 @@ void darp_luau_pushrequirecallback(lua_State* L, darp_luau_callback callback, vo
     lua_pushcclosure(L, darp_luau_require_callback_trampoline, debugname, 2);
 }
 
-void* darp_luau_newrequirecontext(
+darp_luau_require_context* darp_luau_newrequirecontext(
     luarequire_Configuration_init config_init,
     darp_luau_require_load_callback load_callback,
     void* ctx)
@@ -224,12 +224,12 @@ void* darp_luau_newrequirecontext(
     return context;
 }
 
-void darp_luau_freerequirecontext(void* context)
+void darp_luau_freerequirecontext(darp_luau_require_context* context)
 {
-    delete static_cast<darp_luau_require_context_data*>(context);
+    delete context;
 }
 
-int darp_luau_pushproxyrequire(lua_State* L, void* context)
+int darp_luau_pushproxyrequire(lua_State* L, darp_luau_require_context* context)
 {
     return luarequire_pushproxyrequire(L, darp_luau_proxyrequire_config_init, context);
 }

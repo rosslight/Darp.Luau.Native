@@ -1788,6 +1788,12 @@ pub type darp_luau_require_load_callback = ::std::option::Option<
         loadname: *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int,
 >;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct darp_luau_require_context_data {
+    _unused: [u8; 0],
+}
+pub type darp_luau_require_context = darp_luau_require_context_data;
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);
 }
@@ -1812,15 +1818,15 @@ unsafe extern "C" {
         config_init: luarequire_Configuration_init,
         load_callback: darp_luau_require_load_callback,
         ctx: *mut ::std::os::raw::c_void,
-    ) -> *mut ::std::os::raw::c_void;
+    ) -> *mut darp_luau_require_context;
 }
 unsafe extern "C" {
-    pub fn darp_luau_freerequirecontext(context: *mut ::std::os::raw::c_void);
+    pub fn darp_luau_freerequirecontext(context: *mut darp_luau_require_context);
 }
 unsafe extern "C" {
     pub fn darp_luau_pushproxyrequire(
         L: *mut lua_State,
-        context: *mut ::std::os::raw::c_void,
+        context: *mut darp_luau_require_context,
     ) -> ::std::os::raw::c_int;
 }
 pub type __builtin_va_list = [__va_list_tag; 1usize];

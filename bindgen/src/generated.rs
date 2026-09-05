@@ -112,6 +112,7 @@ pub const LUA_EXECUTION_CALLBACK_STORAGE: u32 = 512;
 pub const LUA_MINSTRTABSIZE: u32 = 32;
 pub const LUA_MAXCAPTURES: u32 = 32;
 pub const LUA_VECTOR_SIZE: u32 = 3;
+pub const LUA_VECTOR_DOUBLE: u32 = 0;
 pub const LUA_EXTRA_SIZE: u32 = 1;
 pub const LUA_MULTRET: i32 = -1;
 pub const LUA_REGISTRYINDEX: i32 = -10000;
@@ -307,12 +308,13 @@ pub enum lua_Type {
     LUA_TDEADKEY = 14,
     LUA_TPROTO = 15,
     LUA_TUPVAL = 16,
+    LUA_T_ALL = 17,
 }
 pub type lua_Number = f64;
 pub type lua_Integer = ::std::os::raw::c_int;
 pub type lua_Unsigned = ::std::os::raw::c_uint;
 unsafe extern "C" {
-    pub fn lua_newstate(f: lua_Alloc, ud: *mut ::std::os::raw::c_void) -> *mut lua_State;
+    pub fn lua_newstate(allocator: lua_Alloc, ud: *mut ::std::os::raw::c_void) -> *mut lua_State;
 }
 unsafe extern "C" {
     pub fn lua_close(L: *mut lua_State);
@@ -753,6 +755,21 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn lua_callyieldable(
+        L: *mut lua_State,
+        nargs: ::std::os::raw::c_int,
+        nresults: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_pcallyieldable(
+        L: *mut lua_State,
+        nargs: ::std::os::raw::c_int,
+        nresults: ::std::os::raw::c_int,
+        errfunc: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn lua_yield(L: *mut lua_State, nresults: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
@@ -796,6 +813,7 @@ pub enum lua_GCOp {
     LUA_GCSETGOAL = 7,
     LUA_GCSETSTEPMUL = 8,
     LUA_GCSETSTEPSIZE = 9,
+    LUA_GCISPAUSED = 10,
 }
 unsafe extern "C" {
     pub fn lua_gc(
@@ -804,11 +822,24 @@ unsafe extern "C" {
         data: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
+pub type lua_CategoryName = ::std::option::Option<
+    unsafe extern "C" fn(L: *mut lua_State, memcat: u8) -> *const ::std::os::raw::c_char,
+>;
+unsafe extern "C" {
+    pub fn lua_memorydump(
+        L: *mut lua_State,
+        file: *mut ::std::os::raw::c_void,
+        categoryName: lua_CategoryName,
+    );
+}
 unsafe extern "C" {
     pub fn lua_setmemcat(L: *mut lua_State, category: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
     pub fn lua_totalbytes(L: *mut lua_State, category: ::std::os::raw::c_int) -> usize;
+}
+unsafe extern "C" {
+    pub fn lua_allocationrate(L: *mut lua_State) -> i64;
 }
 unsafe extern "C" {
     pub fn lua_error(L: *mut lua_State) -> !;
@@ -825,6 +856,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_concat(L: *mut lua_State, n: ::std::os::raw::c_int);
+}
+unsafe extern "C" {
+    pub fn lua_setpointerencodekey(L: *mut lua_State, a: u64, b: u64, c: u64, d: u64);
 }
 unsafe extern "C" {
     pub fn lua_encodepointer(L: *mut lua_State, p: usize) -> usize;
@@ -848,11 +882,42 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn lua_getuserdatadtor(L: *mut lua_State, tag: ::std::os::raw::c_int) -> lua_Destructor;
 }
+pub type lua_UserdataMark =
+    ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, ud: *mut ::std::os::raw::c_void)>;
+unsafe extern "C" {
+    pub fn lua_setuserdatamark(
+        L: *mut lua_State,
+        tag: ::std::os::raw::c_int,
+        markfn: lua_UserdataMark,
+    );
+}
+pub type lua_EmbedderMark =
+    ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, ref_: ::std::os::raw::c_int)>;
+pub type lua_EmbedderGc =
+    ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, markref: lua_EmbedderMark)>;
+unsafe extern "C" {
+    pub fn lua_setembeddergc(L: *mut lua_State, fn_: lua_EmbedderGc);
+}
+unsafe extern "C" {
+    pub fn lua_weakref(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_weakunref(L: *mut lua_State, ref_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_getweakref(L: *mut lua_State, ref_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
 unsafe extern "C" {
     pub fn lua_setuserdatametatable(L: *mut lua_State, tag: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
     pub fn lua_getuserdatametatable(L: *mut lua_State, tag: ::std::os::raw::c_int);
+}
+unsafe extern "C" {
+    pub fn lua_getuserdataname(
+        L: *mut lua_State,
+        tag: ::std::os::raw::c_int,
+    ) -> *const ::std::os::raw::c_char;
 }
 pub type lua_UserdataDirectAccess = ::std::option::Option<
     unsafe extern "C" fn(
@@ -932,6 +997,9 @@ unsafe extern "C" {
     pub fn lua_clonefunction(L: *mut lua_State, idx: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
+    pub fn lua_usesexport(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn lua_cleartable(L: *mut lua_State, idx: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
@@ -944,10 +1012,13 @@ unsafe extern "C" {
     pub fn lua_ref(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn lua_unref(L: *mut lua_State, ref_: ::std::os::raw::c_int);
+    pub fn lua_unref(L: *mut lua_State, ref_: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 pub type lua_Hook =
     ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, ar: *mut lua_Debug)>;
+unsafe extern "C" {
+    pub fn lua_callhook(L: *mut lua_State, hook: lua_Hook, userdata: *mut ::std::os::raw::c_void);
+}
 unsafe extern "C" {
     pub fn lua_stackdepth(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
@@ -995,6 +1066,18 @@ unsafe extern "C" {
     ) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "C" {
+    pub fn lua_hascustomexecution(
+        L: *mut lua_State,
+        level: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_incustomexecution(
+        L: *mut lua_State,
+        level: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn lua_singlestep(L: *mut lua_State, enabled: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
@@ -1005,6 +1088,51 @@ unsafe extern "C" {
         enabled: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
+unsafe extern "C" {
+    pub fn lua_atbreakpoint(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn lua_debugtrace(L: *mut lua_State) -> *const ::std::os::raw::c_char;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lua_Debug {
+    pub name: *const ::std::os::raw::c_char,
+    pub what: *const ::std::os::raw::c_char,
+    pub source: *const ::std::os::raw::c_char,
+    pub short_src: *const ::std::os::raw::c_char,
+    pub linedefined: ::std::os::raw::c_int,
+    pub currentline: ::std::os::raw::c_int,
+    pub protoid: ::std::os::raw::c_int,
+    pub bytecodeid: ::std::os::raw::c_int,
+    pub nupvals: ::std::os::raw::c_uchar,
+    pub nparams: ::std::os::raw::c_uchar,
+    pub isvararg: ::std::os::raw::c_char,
+    pub userdata: *mut ::std::os::raw::c_void,
+    pub ssbuf: [::std::os::raw::c_char; 256usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of lua_Debug"][::std::mem::size_of::<lua_Debug>() - 320usize];
+    ["Alignment of lua_Debug"][::std::mem::align_of::<lua_Debug>() - 8usize];
+    ["Offset of field: lua_Debug::name"][::std::mem::offset_of!(lua_Debug, name) - 0usize];
+    ["Offset of field: lua_Debug::what"][::std::mem::offset_of!(lua_Debug, what) - 8usize];
+    ["Offset of field: lua_Debug::source"][::std::mem::offset_of!(lua_Debug, source) - 16usize];
+    ["Offset of field: lua_Debug::short_src"]
+        [::std::mem::offset_of!(lua_Debug, short_src) - 24usize];
+    ["Offset of field: lua_Debug::linedefined"]
+        [::std::mem::offset_of!(lua_Debug, linedefined) - 32usize];
+    ["Offset of field: lua_Debug::currentline"]
+        [::std::mem::offset_of!(lua_Debug, currentline) - 36usize];
+    ["Offset of field: lua_Debug::protoid"][::std::mem::offset_of!(lua_Debug, protoid) - 40usize];
+    ["Offset of field: lua_Debug::bytecodeid"]
+        [::std::mem::offset_of!(lua_Debug, bytecodeid) - 44usize];
+    ["Offset of field: lua_Debug::nupvals"][::std::mem::offset_of!(lua_Debug, nupvals) - 48usize];
+    ["Offset of field: lua_Debug::nparams"][::std::mem::offset_of!(lua_Debug, nparams) - 49usize];
+    ["Offset of field: lua_Debug::isvararg"][::std::mem::offset_of!(lua_Debug, isvararg) - 50usize];
+    ["Offset of field: lua_Debug::userdata"][::std::mem::offset_of!(lua_Debug, userdata) - 56usize];
+    ["Offset of field: lua_Debug::ssbuf"][::std::mem::offset_of!(lua_Debug, ssbuf) - 64usize];
+};
 pub type lua_Coverage = ::std::option::Option<
     unsafe extern "C" fn(
         context: *mut ::std::os::raw::c_void,
@@ -1047,43 +1175,6 @@ unsafe extern "C" {
         countervisit: lua_CounterValue,
     );
 }
-unsafe extern "C" {
-    pub fn lua_debugtrace(L: *mut lua_State) -> *const ::std::os::raw::c_char;
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct lua_Debug {
-    pub name: *const ::std::os::raw::c_char,
-    pub what: *const ::std::os::raw::c_char,
-    pub source: *const ::std::os::raw::c_char,
-    pub short_src: *const ::std::os::raw::c_char,
-    pub linedefined: ::std::os::raw::c_int,
-    pub currentline: ::std::os::raw::c_int,
-    pub nupvals: ::std::os::raw::c_uchar,
-    pub nparams: ::std::os::raw::c_uchar,
-    pub isvararg: ::std::os::raw::c_char,
-    pub userdata: *mut ::std::os::raw::c_void,
-    pub ssbuf: [::std::os::raw::c_char; 256usize],
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of lua_Debug"][::std::mem::size_of::<lua_Debug>() - 312usize];
-    ["Alignment of lua_Debug"][::std::mem::align_of::<lua_Debug>() - 8usize];
-    ["Offset of field: lua_Debug::name"][::std::mem::offset_of!(lua_Debug, name) - 0usize];
-    ["Offset of field: lua_Debug::what"][::std::mem::offset_of!(lua_Debug, what) - 8usize];
-    ["Offset of field: lua_Debug::source"][::std::mem::offset_of!(lua_Debug, source) - 16usize];
-    ["Offset of field: lua_Debug::short_src"]
-        [::std::mem::offset_of!(lua_Debug, short_src) - 24usize];
-    ["Offset of field: lua_Debug::linedefined"]
-        [::std::mem::offset_of!(lua_Debug, linedefined) - 32usize];
-    ["Offset of field: lua_Debug::currentline"]
-        [::std::mem::offset_of!(lua_Debug, currentline) - 36usize];
-    ["Offset of field: lua_Debug::nupvals"][::std::mem::offset_of!(lua_Debug, nupvals) - 40usize];
-    ["Offset of field: lua_Debug::nparams"][::std::mem::offset_of!(lua_Debug, nparams) - 41usize];
-    ["Offset of field: lua_Debug::isvararg"][::std::mem::offset_of!(lua_Debug, isvararg) - 42usize];
-    ["Offset of field: lua_Debug::userdata"][::std::mem::offset_of!(lua_Debug, userdata) - 48usize];
-    ["Offset of field: lua_Debug::ssbuf"][::std::mem::offset_of!(lua_Debug, ssbuf) - 56usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lua_Callbacks {
@@ -1105,12 +1196,26 @@ pub struct lua_Callbacks {
     pub debuginterrupt:
         ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, ar: *mut lua_Debug)>,
     pub debugprotectederror: ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State)>,
-    pub onallocate:
-        ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, osize: usize, nsize: usize)>,
+    pub onallocate: ::std::option::Option<
+        unsafe extern "C" fn(
+            L: *mut lua_State,
+            block: *mut ::std::os::raw::c_void,
+            osize: usize,
+            nsize: usize,
+            memcat: u8,
+            tt: ::std::os::raw::c_int,
+            tag: ::std::os::raw::c_int,
+        ),
+    >,
+    pub preresume: ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State)>,
+    pub postresume: ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State)>,
+    pub onfree: ::std::option::Option<
+        unsafe extern "C" fn(L: *mut lua_State, block: *mut ::std::os::raw::c_void),
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of lua_Callbacks"][::std::mem::size_of::<lua_Callbacks>() - 80usize];
+    ["Size of lua_Callbacks"][::std::mem::size_of::<lua_Callbacks>() - 104usize];
     ["Alignment of lua_Callbacks"][::std::mem::align_of::<lua_Callbacks>() - 8usize];
     ["Offset of field: lua_Callbacks::userdata"]
         [::std::mem::offset_of!(lua_Callbacks, userdata) - 0usize];
@@ -1132,6 +1237,12 @@ const _: () = {
         [::std::mem::offset_of!(lua_Callbacks, debugprotectederror) - 64usize];
     ["Offset of field: lua_Callbacks::onallocate"]
         [::std::mem::offset_of!(lua_Callbacks, onallocate) - 72usize];
+    ["Offset of field: lua_Callbacks::preresume"]
+        [::std::mem::offset_of!(lua_Callbacks, preresume) - 80usize];
+    ["Offset of field: lua_Callbacks::postresume"]
+        [::std::mem::offset_of!(lua_Callbacks, postresume) - 88usize];
+    ["Offset of field: lua_Callbacks::onfree"]
+        [::std::mem::offset_of!(lua_Callbacks, onfree) - 96usize];
 };
 unsafe extern "C" {
     pub fn lua_callbacks(L: *mut lua_State) -> *mut lua_Callbacks;
@@ -1287,6 +1398,13 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
+    pub fn luaL_checkudatatagged(
+        L: *mut lua_State,
+        ud: ::std::os::raw::c_int,
+        tag: ::std::os::raw::c_int,
+    ) -> *mut ::std::os::raw::c_void;
+}
+unsafe extern "C" {
     pub fn luaL_checkbuffer(
         L: *mut lua_State,
         narg: ::std::os::raw::c_int,
@@ -1330,21 +1448,6 @@ unsafe extern "C" {
         L: *mut lua_State,
         idx: ::std::os::raw::c_int,
     ) -> *const ::std::os::raw::c_char;
-}
-unsafe extern "C" {
-    pub fn luaL_callyieldable(
-        L: *mut lua_State,
-        nargs: ::std::os::raw::c_int,
-        nresults: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn luaL_pcallyieldable(
-        L: *mut lua_State,
-        nargs: ::std::os::raw::c_int,
-        nresults: ::std::os::raw::c_int,
-        errfunc: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn luaL_traceback(
@@ -1475,6 +1578,7 @@ pub struct lua_CompileOptions {
     pub vectorLib: *const ::std::os::raw::c_char,
     pub vectorCtor: *const ::std::os::raw::c_char,
     pub vectorType: *const ::std::os::raw::c_char,
+    pub vectorPrecision: ::std::os::raw::c_int,
     pub mutableGlobals: *const *const ::std::os::raw::c_char,
     pub userdataTypes: *const *const ::std::os::raw::c_char,
     pub librariesWithKnownMembers: *const *const ::std::os::raw::c_char,
@@ -1484,7 +1588,7 @@ pub struct lua_CompileOptions {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of lua_CompileOptions"][::std::mem::size_of::<lua_CompileOptions>() - 88usize];
+    ["Size of lua_CompileOptions"][::std::mem::size_of::<lua_CompileOptions>() - 96usize];
     ["Alignment of lua_CompileOptions"][::std::mem::align_of::<lua_CompileOptions>() - 8usize];
     ["Offset of field: lua_CompileOptions::optimizationLevel"]
         [::std::mem::offset_of!(lua_CompileOptions, optimizationLevel) - 0usize];
@@ -1500,18 +1604,20 @@ const _: () = {
         [::std::mem::offset_of!(lua_CompileOptions, vectorCtor) - 24usize];
     ["Offset of field: lua_CompileOptions::vectorType"]
         [::std::mem::offset_of!(lua_CompileOptions, vectorType) - 32usize];
+    ["Offset of field: lua_CompileOptions::vectorPrecision"]
+        [::std::mem::offset_of!(lua_CompileOptions, vectorPrecision) - 40usize];
     ["Offset of field: lua_CompileOptions::mutableGlobals"]
-        [::std::mem::offset_of!(lua_CompileOptions, mutableGlobals) - 40usize];
+        [::std::mem::offset_of!(lua_CompileOptions, mutableGlobals) - 48usize];
     ["Offset of field: lua_CompileOptions::userdataTypes"]
-        [::std::mem::offset_of!(lua_CompileOptions, userdataTypes) - 48usize];
+        [::std::mem::offset_of!(lua_CompileOptions, userdataTypes) - 56usize];
     ["Offset of field: lua_CompileOptions::librariesWithKnownMembers"]
-        [::std::mem::offset_of!(lua_CompileOptions, librariesWithKnownMembers) - 56usize];
+        [::std::mem::offset_of!(lua_CompileOptions, librariesWithKnownMembers) - 64usize];
     ["Offset of field: lua_CompileOptions::libraryMemberTypeCb"]
-        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberTypeCb) - 64usize];
+        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberTypeCb) - 72usize];
     ["Offset of field: lua_CompileOptions::libraryMemberConstantCb"]
-        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberConstantCb) - 72usize];
+        [::std::mem::offset_of!(lua_CompileOptions, libraryMemberConstantCb) - 80usize];
     ["Offset of field: lua_CompileOptions::disabledBuiltins"]
-        [::std::mem::offset_of!(lua_CompileOptions, disabledBuiltins) - 80usize];
+        [::std::mem::offset_of!(lua_CompileOptions, disabledBuiltins) - 88usize];
 };
 unsafe extern "C" {
     pub fn luau_compile(
@@ -1543,6 +1649,15 @@ unsafe extern "C" {
         y: f32,
         z: f32,
         w: f32,
+    );
+}
+unsafe extern "C" {
+    pub fn luau_set_compile_constant_vectord(
+        constant: *mut lua_CompileConstant,
+        x: f64,
+        y: f64,
+        z: f64,
+        w: f64,
     );
 }
 unsafe extern "C" {
@@ -1766,6 +1881,19 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn luarequire_clearcache(L: *mut lua_State) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn luarequire_lockplaceholder(L: *mut lua_State, idx: ::std::os::raw::c_int);
+}
+unsafe extern "C" {
+    pub fn luarequire_populateplaceholder(
+        L: *mut lua_State,
+        placeholderIdx: ::std::os::raw::c_int,
+        resultIdx: ::std::os::raw::c_int,
+    );
+}
+unsafe extern "C" {
+    pub fn luarequire_createplaceholder(L: *mut lua_State);
 }
 pub const DARP_LUAU_REQUIRE_PROXY: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_REQUIRE_PROXY;
 #[repr(i32)]

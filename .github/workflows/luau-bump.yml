@@ -80,12 +80,14 @@ jobs:
 
             - Updates `native/luau` to `${{ steps.luau.outputs.latest_tag }}`
             - Updates package version metadata to match `${{ steps.luau.outputs.latest_tag }}`
+            - Records the latest release commit for changelog generation
             - Regenerates Rust bindgen output
             - Regenerates .NET P/Invoke bindings
           add-paths: |
             native/luau
             Directory.Build.props
             .release-please-manifest.json
+            .release-please-config.json
             bindgen/src/generated.rs
             src/Darp.Luau.Native/LuauNative.g.cs
             scripts/update_luau_version.py

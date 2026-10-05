@@ -9,6 +9,10 @@ Git tags follow the format `v1.2.3+luau.0.708`, where `1.2.3` is the package
 SemVer and `0.708` is the Luau version equal the `native/luau`
 submodule.
 
+The Luau bump automation records the latest release commit as `bootstrap-sha` in
+the Release Please configuration. This bounds changelog generation when changing
+Luau metadata makes the version in the manifest differ from the published tag.
+
 ## Included native runtimes
 
 - `win-x64`

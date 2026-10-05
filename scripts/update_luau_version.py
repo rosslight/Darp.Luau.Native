@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -15,6 +16,14 @@ def main() -> None:
     luau_tag = sys.argv[1]
     if not re.fullmatch(r"[0-9]+\.[0-9]+", luau_tag):
         fail(f"Unexpected Luau tag format: {luau_tag}")
+
+    release_tag = subprocess.check_output(
+        ["git", "describe", "--tags", "--abbrev=0", "--match", "v[0-9]*"],
+        text=True,
+    ).strip()
+    release_sha = subprocess.check_output(
+        ["git", "rev-list", "-n", "1", release_tag], text=True
+    ).strip()
 
     props_path = Path("Directory.Build.props")
     props_text = props_path.read_text(encoding="utf-8")
@@ -38,6 +47,12 @@ def main() -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["."] = next_version
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    # Changing Luau metadata breaks the exact tag match; retain the release cutoff.
+    config_path = Path(".release-please-config.json")
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["bootstrap-sha"] = release_sha
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

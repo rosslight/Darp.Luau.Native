@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.5.0+luau.0.741...v0.5.1+luau.0.741) (2026-10-05)
+
+
+### Dependencies
+
+* **luau:** bump to 0.741 ([#13](https://github.com/rosslight/Darp.Luau.Native/issues/13)) ([65d3f32](https://github.com/rosslight/Darp.Luau.Native/commit/65d3f324b5a968140797eea729f9ed38fabaaba2))
+
 ## [0.5.0+luau.0.726](https://github.com/rosslight/Darp.Luau.Native/compare/v0.4.1+luau.0.726...v0.5.0+luau.0.726) (2026-06-23)
 
 

@@ -4,6 +4,8 @@ public static unsafe partial class LuauNative
 {
     public const int DARP_LUAU_REQUIRE_PROXY = -2;
 
+    public const int DARP_LUAU_CALLBACK_YIELD = -3;
+
     public const int LUA_MULTRET = -1;
 
     public const int LUA_REGISTRYINDEX = -10000;

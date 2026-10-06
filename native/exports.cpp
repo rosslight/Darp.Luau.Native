@@ -30,6 +30,9 @@ static int darp_luau_callback_trampoline(lua_State* L)
     if (result >= 0)
         return result;
 
+    if (result == DARP_LUAU_CALLBACK_YIELD)
+        return lua_yield(L, 0);
+
     darp_luau_raise_top_error(L);
     return 0;
 }

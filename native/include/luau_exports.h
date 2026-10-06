@@ -21,6 +21,7 @@ extern "C"
 enum
 {
     DARP_LUAU_REQUIRE_PROXY = -2,
+    DARP_LUAU_CALLBACK_YIELD = -3,
 };
 
 typedef int (*darp_luau_callback)(lua_State* L, void* ctx);

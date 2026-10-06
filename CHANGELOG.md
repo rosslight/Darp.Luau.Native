@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.5.1+luau.0.741...v0.6.0+luau.0.741) (2026-10-06)
+
+
+### Features
+
+* let managed callbacks yield through the callback trampoline ([#16](https://github.com/rosslight/Darp.Luau.Native/issues/16)) ([efb358f](https://github.com/rosslight/Darp.Luau.Native/commit/efb358f023fac23d3e5c8f452711273888db64fc))
+
 ## [0.5.1+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.5.0+luau.0.741...v0.5.1+luau.0.741) (2026-10-05)
 
 

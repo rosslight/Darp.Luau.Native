@@ -94,6 +94,8 @@ jobs:
             runner: ubuntu-latest
           - os: windows
             runner: windows-latest
+          - os: windows-arm64
+            runner: windows-11-arm
           - os: macos
             runner: macos-latest
     env:
@@ -134,4 +136,7 @@ jobs:
             -c Release `
             --no-restore `
             -p:UseLocalProjectReference=false
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host ("Integration tests exited with code {0} (0x{0:X8})" -f $LASTEXITCODE)
+            exit $LASTEXITCODE
+          }

@@ -141,26 +141,44 @@ jobs:
             exit $LASTEXITCODE
           }
 
-  # Temporary: diagnose the Windows arm64 crash in luaL_newstate
+  # Temporary: isolate MSVC ARM64 state-initialization code generation.
   diagnose-win-arm64:
-    name: Diagnose win-arm64 (luau ${{ matrix.luau }})
-    needs: build-native
+    name: Diagnose win-arm64 (${{ matrix.name }})
     runs-on: windows-11-arm
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        luau: ["0.738", "c6b83018", "0.739", "pinned"]
+        include:
+          - name: parent-738
+            luau: 47cda63705c25633d757bacdcb7c9c6190625cad
+            flags: /O2 /Ob2
+            state_options: ""
+          - name: baseline-741
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: ""
+          - name: state-Od
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: /Od;/Ob0
+          - name: state-no-vectorization
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: /Qvec-
+          - name: state-no-pre
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: /d2ssa-pre-
+          - name: all-Od
+            luau: pinned
+            flags: /Od /Ob0
+            state_options: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Download native runtime artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: native-win-arm64
-          path: artifacts/ci-native
 
       - name: Check out Luau ${{ matrix.luau }}
         if: matrix.luau != 'pinned'
@@ -171,21 +189,22 @@ jobs:
           git -C native/luau checkout FETCH_HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Build luau.dll natively with PDB
+      - name: Build luau.dll natively with PDB and assembly
         shell: pwsh
         run: |
           cmake -S native -B build -G "Visual Studio 18 2026" -A ARM64 `
-            "-DCMAKE_C_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi" `
-            "-DCMAKE_CXX_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi" `
+            "-DLUAU_ARM64_DIAG_STATE_OPTIONS=${{ matrix.state_options }}" `
+            "-DCMAKE_CXX_FLAGS_RELEASE=${{ matrix.flags }} /DNDEBUG /Zi /FAs" `
             "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /OPT:REF /OPT:ICF /INCREMENTAL:NO"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build build --config Release --parallel -- /v:m /clp:ErrorsOnly
+          cmake --build build --target luau --config Release --parallel -- /v:m /clp:ErrorsOnly
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake -S .github/diag -B build-repro -G "Visual Studio 18 2026" -A ARM64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build-repro --config Release
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Run repro against natively built luau.dll
+      - name: Run repro
         shell: pwsh
         continue-on-error: true
         run: |
@@ -193,11 +212,11 @@ jobs:
           Write-Host ("repro exited with 0x{0:X8}" -f $LASTEXITCODE)
           exit $LASTEXITCODE
 
-      - name: Run repro against CI-built luau.dll
-        if: matrix.luau == 'pinned'
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          ./build-repro/Release/repro.exe (Resolve-Path artifacts/ci-native/win-arm64/luau.dll).Path
-          Write-Host ("repro exited with 0x{0:X8}" -f $LASTEXITCODE)
-          exit $LASTEXITCODE
+      - name: Upload assembly
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: assembly-${{ matrix.name }}
+          path: |
+            build/**/lstate.asm
+            build/**/lmem.asm

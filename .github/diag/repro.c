@@ -45,6 +45,28 @@ static int filter(EXCEPTION_POINTERS* ep)
     for (int i = -8; i <= 4; i++)
         printf("  %s%p: %08x\n", i == 0 ? "=>" : "  ", (void*)(pc + i), pc[i]);
 #endif
+#if defined(_M_ARM64)
+    CONTEXT unwind = *c;
+    printf("fault stack:\n");
+    for (int i = 0; i < 20 && unwind.Pc; i++)
+    {
+        describe("fault frame", unwind.Pc);
+        DWORD64 imagebase = 0;
+        PRUNTIME_FUNCTION fn = RtlLookupFunctionEntry(unwind.Pc, &imagebase, NULL);
+        if (!fn)
+        {
+            if (unwind.Pc == unwind.Lr)
+                break;
+            unwind.Pc = unwind.Lr;
+        }
+        else
+        {
+            PVOID handlerdata;
+            DWORD64 establisher;
+            RtlVirtualUnwind(UNW_FLAG_NHANDLER, imagebase, unwind.Pc, fn, &unwind, &handlerdata, &establisher, NULL);
+        }
+    }
+#endif
     void* frames[32];
     USHORT n = RtlCaptureStackBackTrace(0, 32, frames, NULL);
     printf("stack:\n");
@@ -106,7 +128,7 @@ int main(int argc, char** argv)
         void* L = newstate();
         printf("state %p\n", L);
         close_state(L);
-                printf("main ok\n");
+        printf("main ok\n");
         HANDLE worker = CreateThread(NULL, 0, exercise, NULL, 0, NULL);
         WaitForSingleObject(worker, INFINITE);
         DWORD result;

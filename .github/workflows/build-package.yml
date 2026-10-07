@@ -149,7 +149,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        luau: [pinned, "0.726"]
+        luau: ["0.730", "0.734", "0.737", "0.739", "0.740"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

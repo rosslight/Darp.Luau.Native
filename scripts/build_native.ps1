@@ -46,7 +46,7 @@ $cmakeArgs = @("-S", $SourceDir, "-B", $BuildDir, "-G", $Generator)
 switch ($os) {
   "win" {
     $msvcArch = if ($arch -eq "arm64") { "ARM64" } else { $arch }
-    $cmakeArgs += "-A", $msvcArch
+    $cmakeArgs += "-A", $msvcArch, "-T", "ClangCL"
   }
   "linux" {
     $cmakeArgs += "-DCMAKE_BUILD_TYPE=$Configuration"

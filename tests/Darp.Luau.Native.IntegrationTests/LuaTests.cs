@@ -7,6 +7,17 @@ namespace Darp.Luau.Native.IntegrationTests;
 public sealed unsafe class LuaTests
 {
     [Fact]
+    public Task RepeatedStateCreationAndClosureOnWorkerThread() => Task.Run(static () =>
+    {
+        for (var i = 0; i < 100; i++)
+        {
+            var state = luaL_newstate();
+            Assert.NotNull(state);
+            lua_close(state);
+        }
+    }, TestContext.Current.CancellationToken);
+
+    [Fact]
     public void SetFields()
     {
         var state = luaL_newstate();

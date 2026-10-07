@@ -40,21 +40,26 @@ Build native libraries:
 ./scripts/build_native.ps1 -RuntimeId 'osx-x64' -Generator 'Ninja'
 ```
 
-### Windows ARM64 builds
+### Windows builds
 
-Optimized MSVC ARM64 builds compile Luau's `VM/src/lstate.cpp` with `/O1`.
+The build script selects Visual Studio's `ClangCL` toolset for Windows x64 and
+ARM64. Install the **C++ Clang tools for Windows** component, the Windows SDK,
+and the C++ build tools for the target architecture in Visual Studio.
+Clang-cl uses the Windows SDK and Microsoft runtime libraries and preserves the
+Windows C ABI used by the bindings.
+
 MSVC 19.51 with `/O2` miscompiles the caged GC page initialization introduced in
 [Luau 0.738 (`c54f558b`)](https://github.com/luau-lang/luau/commit/c54f558b4d5748ab0658610b8ce0c432053e41eb):
-it writes through an uninitialized stack pointer instead of clearing the new page-list fields.
-This can cause an access violation in `lua_newstate`, or leave an invalid list that
-later crashes `luaM_visitgco` during `lua_close`. The remaining translation units
-use their normal optimization settings.
+it writes through an uninitialized spilled pointer instead of clearing the new
+page-list fields. This can cause an access violation in `lua_newstate`, or leave
+an invalid list that later crashes `luaM_visitgco` during `lua_close`.
+Using clang-cl avoids this compiler path with normal release optimization,
+without modifying Luau or reducing optimization for individual source files.
 
 The [regression diagnostics](https://github.com/rosslight/Darp.Luau.Native/actions/runs/37587427985)
-show the release-sync parent passing and the default 0.741 build crashing.
-The [`/O1` diagnostics](https://github.com/rosslight/Darp.Luau.Native/actions/runs/37587949396/job/112682367797)
-pass repeated state creation and closure on a worker thread and DLL unloading.
-CI also runs the packaged `win-arm64` runtime on `windows-11-arm`.
+show the release-sync parent passing and the default MSVC 0.741 build crashing.
+CI runs the packaged `win-arm64` runtime on `windows-11-arm`, including repeated
+state creation and closure on a worker thread, and tests every supported RID.
 
 Pack nuget package:
 ```shell

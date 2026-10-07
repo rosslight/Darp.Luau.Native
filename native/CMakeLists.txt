@@ -15,15 +15,6 @@ set(LUAU_EXTERN_C OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(luau)
 
-# MSVC 19.51 /O2 miscompiles the caged GC page initialization added in Luau 0.738.
-# Optimize this file for size to avoid stores through an uninitialized stack pointer.
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
-  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/luau/VM/src/lstate.cpp"
-    TARGET_DIRECTORY Luau.VM
-    PROPERTIES COMPILE_OPTIONS "$<$<CONFIG:Release,RelWithDebInfo>:/O1>"
-  )
-endif()
-
 if (MSVC)
   set(LUAU_EXPORT_C "extern \"C\" __declspec(dllexport)")
 else()

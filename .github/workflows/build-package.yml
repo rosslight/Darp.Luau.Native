@@ -150,30 +150,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: parent-738
-            luau: 47cda63705c25633d757bacdcb7c9c6190625cad
-            flags: /O2 /Ob2
-            state_options: ""
-          - name: baseline-741
+          - name: state-no-inline
             luau: pinned
             flags: /O2 /Ob2
-            state_options: ""
+            state_options: /Ob0
+          - name: state-O1
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: /O1
+          - name: state-no-intrinsics
+            luau: pinned
+            flags: /O2 /Ob2
+            state_options: /Oi-
           - name: state-Od
             luau: pinned
             flags: /O2 /Ob2
             state_options: /Od;/Ob0
-          - name: state-no-vectorization
-            luau: pinned
-            flags: /O2 /Ob2
-            state_options: /Qvec-
-          - name: state-no-pre
-            luau: pinned
-            flags: /O2 /Ob2
-            state_options: /d2ssa-pre-
-          - name: all-Od
-            luau: pinned
-            flags: /Od /Ob0
-            state_options: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -54,6 +54,7 @@ static int filter(EXCEPTION_POINTERS* ep)
 
 int main(int argc, char** argv)
 {
+    setvbuf(stdout, NULL, _IONBF, 0);
     if (argc < 2)
         return 1;
     mod = LoadLibraryA(argv[1]);

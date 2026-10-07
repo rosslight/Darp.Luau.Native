@@ -22,6 +22,10 @@ Luau metadata makes the version in the manifest differ from the published tag.
 - `osx-x64`
 - `osx-arm64`
 
+CI runs integration tests against the packed NuGet package on native x64 and ARM64
+runners for Windows, Linux, and macOS on every push and pull request, and before
+publishing a release.
+
 ## Develop locally
 
 Build bindings:

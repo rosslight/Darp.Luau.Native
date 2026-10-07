@@ -83,20 +83,24 @@ jobs:
             artifacts/packages/*.snupkg
 
   integration-test:
-    name: Integration test (${{ matrix.os }})
+    name: Integration test (${{ matrix.rid }})
     needs: pack
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: linux
-            runner: ubuntu-latest
-          - os: windows
+          - rid: win-x64
             runner: windows-latest
-          - os: windows-arm64
+          - rid: win-arm64
             runner: windows-11-arm
-          - os: macos
+          - rid: linux-x64
+            runner: ubuntu-latest
+          - rid: linux-arm64
+            runner: ubuntu-24.04-arm
+          - rid: osx-x64
+            runner: macos-15-intel
+          - rid: osx-arm64
             runner: macos-latest
     env:
       CI: true
@@ -125,6 +129,7 @@ jobs:
           dotnet restore tests/Darp.Luau.Native.IntegrationTests/Darp.Luau.Native.IntegrationTests.csproj `
             --source "https://api.nuget.org/v3/index.json" `
             --source "$source" `
+            --runtime "${{ matrix.rid }}" `
             -p:UseLocalProjectReference=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -135,6 +140,7 @@ jobs:
             --project tests/Darp.Luau.Native.IntegrationTests/Darp.Luau.Native.IntegrationTests.csproj `
             -c Release `
             --no-restore `
+            --runtime "${{ matrix.rid }}" `
             -p:UseLocalProjectReference=false
           if ($LASTEXITCODE -ne 0) {
             Write-Host ("Integration tests exited with code {0} (0x{0:X8})" -f $LASTEXITCODE)

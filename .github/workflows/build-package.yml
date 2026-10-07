@@ -149,7 +149,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        luau: ["0.730", "0.734", "0.737", "0.739", "0.740"]
+        luau: ["0.738", "c6b83018", "0.739", "pinned"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -166,8 +166,10 @@ jobs:
         if: matrix.luau != 'pinned'
         shell: pwsh
         run: |
-          git -C native/luau fetch --depth 1 origin "refs/tags/${{ matrix.luau }}:refs/tags/${{ matrix.luau }}"
-          git -C native/luau checkout "${{ matrix.luau }}"
+          git -C native/luau fetch --depth 1 origin "${{ matrix.luau }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C native/luau checkout FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build luau.dll natively with PDB
         shell: pwsh

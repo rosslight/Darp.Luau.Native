@@ -7,6 +7,8 @@ typedef void* (*newstate_fn)(void);
 typedef void (*close_fn)(void*);
 
 static HMODULE mod;
+static newstate_fn newstate;
+static close_fn close_state;
 
 static void describe(const char* label, DWORD64 addr)
 {
@@ -52,9 +54,38 @@ static int filter(EXCEPTION_POINTERS* ep)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
+static LONG WINAPI unhandled(EXCEPTION_POINTERS* ep)
+{
+    filter(ep);
+    ExitProcess(3);
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+static DWORD WINAPI exercise(void* unused)
+{
+    (void)unused;
+    __try
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            void* L = newstate();
+            if (!L)
+                return 4;
+            close_state(L);
+        }
+        printf("worker ok\n");
+    }
+    __except (filter(GetExceptionInformation()))
+    {
+        return 3;
+    }
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
+    SetUnhandledExceptionFilter(unhandled);
     if (argc < 2)
         return 1;
     mod = LoadLibraryA(argv[1]);
@@ -66,15 +97,27 @@ int main(int argc, char** argv)
     SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
     SymInitialize(GetCurrentProcess(), NULL, TRUE);
     printf("loaded %s at %p\n", argv[1], (void*)mod);
-    newstate_fn newstate = (newstate_fn)GetProcAddress(mod, "luaL_newstate");
-    close_fn close = (close_fn)GetProcAddress(mod, "lua_close");
+    newstate = (newstate_fn)GetProcAddress(mod, "luaL_newstate");
+    close_state = (close_fn)GetProcAddress(mod, "lua_close");
     printf("luaL_newstate at luau+0x%llx\n", (unsigned long long)((char*)newstate - (char*)mod));
     fflush(stdout);
     __try
     {
         void* L = newstate();
         printf("state %p\n", L);
-        close(L);
+        close_state(L);
+                printf("main ok\n");
+        HANDLE worker = CreateThread(NULL, 0, exercise, NULL, 0, NULL);
+        WaitForSingleObject(worker, INFINITE);
+        DWORD result;
+        GetExitCodeThread(worker, &result);
+        CloseHandle(worker);
+        if (result != 0)
+            return (int)result;
+        printf("unloading DLL\n");
+        FreeLibrary(mod);
+        printf("unload ok\n");
+        SymCleanup(GetCurrentProcess());
         printf("ok\n");
     }
     __except (filter(GetExceptionInformation()))

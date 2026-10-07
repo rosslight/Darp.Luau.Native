@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(luau_monolithic_dll LANGUAGES C CXX)
 
-# Must be set before add_subdirectory(luau)
-
-# Temporary diagnostics; removed once the ARM64 compiler workaround is identified.
-if(DEFINED LUAU_ARM64_DIAG_STATE_OPTIONS)
-  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/luau/VM/src/lstate.cpp"
-    TARGET_DIRECTORY Luau.VM
-    PROPERTIES COMPILE_OPTIONS "${LUAU_ARM64_DIAG_STATE_OPTIONS}"
-  )
-endif() so Luau static libs build with -fPIC
+# Must be set before add_subdirectory(luau) so Luau static libs build with -fPIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Build Luau as STATIC libs (important: no cross-DLL internals)

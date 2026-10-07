@@ -15,7 +15,7 @@ public sealed unsafe class LuaTests
             Assert.NotNull(state);
             lua_close(state);
         }
-    });
+    }, TestContext.Current.CancellationToken);
 
     [Fact]
     public void SetFields()

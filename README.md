@@ -37,7 +37,8 @@ Build a native library for your platform:
 ./scripts/build_native.ps1 -RuntimeId 'osx-x64' -Generator 'Ninja'
 ```
 
-Use the ARM64 runtime ID from the table to build for ARM64.
+Use the ARM64 runtime ID for ARM64 builds. Linux builds require a host with the
+target architecture.
 
 Pack the NuGet package:
 

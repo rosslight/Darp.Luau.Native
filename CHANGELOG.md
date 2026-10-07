@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.6.0+luau.0.741...v0.6.1+luau.0.741) (2026-10-07)
+
+
+### Bug Fixes
+
+* avoid state initialization crashes on Windows arm64 ([#18](https://github.com/rosslight/Darp.Luau.Native/issues/18)) ([3f5994a](https://github.com/rosslight/Darp.Luau.Native/commit/3f5994a1a148ad02ac724c18a6959805e6a6d11c))
+
 ## [0.6.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.5.1+luau.0.741...v0.6.0+luau.0.741) (2026-10-06)
 
 

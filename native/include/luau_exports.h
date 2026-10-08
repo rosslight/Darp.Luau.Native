@@ -77,9 +77,9 @@ LUAU_EXPORT_API int darp_luau_pgettable(lua_State* L, int idx);
 // On an error it replaces both with the error object and returns the status.
 LUAU_EXPORT_API int darp_luau_psettable(lua_State* L, int idx);
 
-// Lets the host stop a running script. Luau calls `interrupt->callback` at every safepoint of a script: each loop
-// iteration, call and return, and each time the string pattern matcher starts to match a pattern item. Once it returns
-// nonzero, the script is stopped:
+// Lets the host stop a running script. Luau calls `interrupt->callback` at its safepoints, the places where it checks
+// for an interrupt: when a loop jumps back, when a script calls a function or returns from one, and when the string
+// pattern matcher is entered or recurses. Once the callback returns nonzero, the script is stopped:
 //
 // - Where Luau can yield, the coroutine breaks: lua_resume returns LUA_BREAK. A break is not an error, so no pcall
 //   of the script sees it. The host abandons the coroutine, for example with lua_resetthread.
@@ -91,8 +91,9 @@ LUAU_EXPORT_API int darp_luau_psettable(lua_State* L, int idx);
 // raises its own error "attempt to break across metamethod/C-call boundary" in the resuming code instead. That code is
 // then stopped at its next safepoint like any other.
 //
-// Only safepoints are checked. Work that Luau does without reaching one is not stopped before it ends, for example a
-// single pattern item that scans a long string, or string.rep with a large count.
+// Only safepoints are checked, and not every call is one. Work that Luau does without reaching a safepoint is not
+// stopped before it ends: a built-in function that Luau calls on its fast path, such as math.abs, a pattern that the
+// matcher works through without recursing, or string.rep with a large count.
 //
 // The callback runs on the thread that runs the script and must return normally. `interrupt` must stay valid until
 // it is replaced or the state is closed. Null removes it, and a script then runs at full speed again.

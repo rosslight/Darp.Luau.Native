@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.7.0+luau.0.741...v0.8.0+luau.0.741) (2026-10-08)
+
+
+### Features
+
+* read and write tables without raising Luau errors ([#22](https://github.com/rosslight/Darp.Luau.Native/issues/22)) ([3b02277](https://github.com/rosslight/Darp.Luau.Native/commit/3b02277238b4873dd08902e6f1aedafd468d6a2d))
+
 ## [0.7.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.6.1+luau.0.741...v0.7.0+luau.0.741) (2026-10-08)
 
 

@@ -1953,6 +1953,23 @@ pub struct darp_luau_require_context_data {
     _unused: [u8; 0],
 }
 pub type darp_luau_require_context = darp_luau_require_context_data;
+pub type darp_luau_interrupt_callback = ::std::option::Option<
+    unsafe extern "C" fn(L: *mut lua_State, ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
+>;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct darp_luau_interrupt {
+    pub callback: darp_luau_interrupt_callback,
+    pub ctx: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of darp_luau_interrupt"][::std::mem::size_of::<darp_luau_interrupt>() - 16usize];
+    ["Alignment of darp_luau_interrupt"][::std::mem::align_of::<darp_luau_interrupt>() - 8usize];
+    ["Offset of field: darp_luau_interrupt::callback"]
+        [::std::mem::offset_of!(darp_luau_interrupt, callback) - 0usize];
+    ["Offset of field: darp_luau_interrupt::ctx"][::std::mem::offset_of!(darp_luau_interrupt, ctx) - 8usize];
+};
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);
 }
@@ -1977,6 +1994,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn darp_luau_psettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn darp_luau_setinterrupt(L: *mut lua_State, interrupt: *const darp_luau_interrupt);
 }
 unsafe extern "C" {
     pub fn darp_luau_pushrequirecallback(

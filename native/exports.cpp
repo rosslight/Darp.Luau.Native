@@ -283,6 +283,34 @@ int darp_luau_psettable(lua_State* L, int idx)
     return luaD_pcall(L, darp_luau_psettable_body, &access, savestack(L, L->top - 2), 0);
 }
 
+static void darp_luau_interrupt_hook(lua_State* L, int gc)
+{
+    // Luau also reports the steps of its garbage collector, where a script cannot be stopped.
+    if (gc >= 0)
+        return;
+
+    auto* interrupt = static_cast<const darp_luau_interrupt*>(lua_callbacks(L)->userdata);
+    if (!interrupt->callback(L, interrupt->ctx))
+        return;
+
+    if (lua_isyieldable(L))
+    {
+        lua_break(L);
+        return;
+    }
+
+    // lua_break would raise an error of its own here. The stack may be full at a safepoint.
+    lua_rawcheckstack(L, 1);
+    luaL_error(L, "script was interrupted");
+}
+
+void darp_luau_setinterrupt(lua_State* L, const darp_luau_interrupt* interrupt)
+{
+    lua_Callbacks* callbacks = lua_callbacks(L);
+    callbacks->userdata = const_cast<darp_luau_interrupt*>(interrupt);
+    callbacks->interrupt = interrupt ? darp_luau_interrupt_hook : nullptr;
+}
+
 void darp_luau_pushrequirecallback(lua_State* L, darp_luau_callback callback, void* ctx, const char* debugname)
 {
     void* userdata = lua_newuserdata(L, sizeof(darp_luau_callback_context_data));

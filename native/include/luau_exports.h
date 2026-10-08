@@ -39,6 +39,15 @@ typedef int (*darp_luau_require_load_callback)(
 
 typedef struct darp_luau_require_context_data darp_luau_require_context;
 
+// Returns nonzero to stop the script that runs on `L`.
+typedef int (*darp_luau_interrupt_callback)(lua_State* L, void* ctx);
+
+typedef struct darp_luau_interrupt
+{
+    darp_luau_interrupt_callback callback;
+    void* ctx;
+} darp_luau_interrupt;
+
 LUAU_EXPORT_API void luau_free(void* ptr);
 
 // Pushes a function that calls `callback`. When the callback returns DARP_LUAU_CALLBACK_YIELD, the coroutine yields
@@ -67,6 +76,21 @@ LUAU_EXPORT_API int darp_luau_pgettable(lua_State* L, int idx);
 // Does t[k] = v for the table at `idx`, the key below the top and the value on top, and pops both. Returns LUA_OK.
 // On an error it replaces both with the error object and returns the status.
 LUAU_EXPORT_API int darp_luau_psettable(lua_State* L, int idx);
+
+// Lets the host stop a running script. Luau calls `interrupt->callback` at every safepoint of a script: each loop
+// iteration, call and return, and each step of a string pattern match. Once it returns nonzero, the script is stopped:
+//
+// - Where Luau can yield, the coroutine breaks: lua_resume returns LUA_BREAK. A break is not an error, so no pcall
+//   of the script sees it. The host abandons the coroutine, for example with lua_resetthread.
+// - Where Luau cannot yield, such as in lua_pcall, a metamethod or a table.sort comparator, the error
+//   "script was interrupted" is raised. A script can catch it, but for as long as the callback returns nonzero the
+//   error is raised again at its next safepoint, so the script cannot go on.
+//
+// The callback runs on the thread that runs the script and must return normally. `interrupt` must stay valid until
+// it is replaced or the state is closed. Null removes it, and a script then runs at full speed again.
+//
+// This uses the interrupt callback and the userdata of lua_callbacks(L).
+LUAU_EXPORT_API void darp_luau_setinterrupt(lua_State* L, const darp_luau_interrupt* interrupt);
 
 LUAU_EXPORT_API void darp_luau_pushrequirecallback(
     lua_State* L,

@@ -1,5 +1,8 @@
 #include "include/luau_api.h"
 
+// Luau internals, for luaD_pcall: the protected call that lua_pcall is built on.
+#include "luau/VM/src/ldo.h"
+
 #include <new>
 #include <stdlib.h>
 #include <string.h>
@@ -231,6 +234,37 @@ int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg)
     lua_pushlightuserdata(L, &darp_luau_callback_resume_mark);
     lua_insert(L, -(narg + 1));
     return lua_resume(L, from, narg + 1);
+}
+
+struct darp_luau_table_access
+{
+    int idx;
+    int type;
+};
+
+static void darp_luau_pgettable_body(lua_State* L, void* ud)
+{
+    auto* access = static_cast<darp_luau_table_access*>(ud);
+    access->type = lua_gettable(L, access->idx);
+}
+
+static void darp_luau_psettable_body(lua_State* L, void* ud)
+{
+    lua_settable(L, static_cast<darp_luau_table_access*>(ud)->idx);
+}
+
+int darp_luau_pgettable(lua_State* L, int idx)
+{
+    darp_luau_table_access access{idx, LUA_TNIL};
+    // On an error, luaD_pcall cuts the stack back to the key and puts the error object in its place.
+    int status = luaD_pcall(L, darp_luau_pgettable_body, &access, savestack(L, L->top - 1), 0);
+    return status == LUA_OK ? access.type : -status;
+}
+
+int darp_luau_psettable(lua_State* L, int idx)
+{
+    darp_luau_table_access access{idx, LUA_TNIL};
+    return luaD_pcall(L, darp_luau_psettable_body, &access, savestack(L, L->top - 2), 0);
 }
 
 void darp_luau_pushrequirecallback(lua_State* L, darp_luau_callback callback, void* ctx, const char* debugname)

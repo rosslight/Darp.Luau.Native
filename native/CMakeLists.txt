@@ -38,7 +38,8 @@ target_compile_definitions(Luau.Require PUBLIC
 )
 
 add_library(luau SHARED exports.cpp)
-target_include_directories(luau PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# The source directory itself is for the one Luau internal the shim uses (luau/VM/src/ldo.h).
+target_include_directories(luau PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(luau PRIVATE Luau.VM Luau.Compiler Luau.Require)
 
 if (MSVC)

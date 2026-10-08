@@ -37,11 +37,18 @@ typedef struct darp_luau_require_context_data darp_luau_require_context;
 
 LUAU_EXPORT_API void luau_free(void* ptr);
 
+// Pushes a function that calls `callback`. When the callback returns DARP_LUAU_CALLBACK_YIELD, the coroutine yields
+// and only darp_luau_resumecallback can continue it with the results of the callback. Any other resume raises an error
+// in the coroutine and clears its thread data, which tells the host that it no longer waits in the callback.
 LUAU_EXPORT_API void darp_luau_pushcallback(
     lua_State* L,
     darp_luau_callback callback,
     void* ctx,
     const char* debugname);
+
+// Resumes a coroutine that yielded in a callback pushed by darp_luau_pushcallback. The top `narg` values become the
+// results of that callback. Returns what lua_resume returns.
+LUAU_EXPORT_API int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg);
 
 LUAU_EXPORT_API void darp_luau_pushrequirecallback(
     lua_State* L,

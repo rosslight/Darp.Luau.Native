@@ -1963,6 +1963,13 @@ unsafe extern "C" {
     );
 }
 unsafe extern "C" {
+    pub fn darp_luau_resumecallback(
+        L: *mut lua_State,
+        from: *mut lua_State,
+        narg: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn darp_luau_pushrequirecallback(
         L: *mut lua_State,
         callback: darp_luau_callback,

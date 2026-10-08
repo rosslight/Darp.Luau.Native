@@ -22,6 +22,9 @@ static void darp_luau_raise_top_error(lua_State* L)
     lua_error(L);
 }
 
+// Marks a resume that delivers the result of a yielded callback. Its address is the mark, which a script cannot forge.
+static char darp_luau_callback_resume_mark;
+
 static int darp_luau_callback_trampoline(lua_State* L)
 {
     auto* context = static_cast<darp_luau_callback_context_data*>(lua_touserdata(L, lua_upvalueindex(1)));
@@ -31,10 +34,31 @@ static int darp_luau_callback_trampoline(lua_State* L)
         return result;
 
     if (result == DARP_LUAU_CALLBACK_YIELD)
+    {
+        // Empty the frame, so that the continuation sees exactly what the resume passed.
+        lua_settop(L, 0);
         return lua_yield(L, 0);
+    }
 
     darp_luau_raise_top_error(L);
     return 0;
+}
+
+// Runs when a coroutine that yielded in a callback is resumed.
+static int darp_luau_callback_continuation(lua_State* L, int status)
+{
+    (void)status;
+
+    if (lua_gettop(L) == 0 || lua_tolightuserdata(L, 1) != &darp_luau_callback_resume_mark)
+    {
+        // Someone other than the host resumed the coroutine. The host loses its claim on the coroutine, so it does
+        // not deliver the result of the callback to whatever the coroutine does next.
+        lua_setthreaddata(L, nullptr);
+        luaL_error(L, "cannot resume a coroutine that is waiting for a managed callback");
+    }
+
+    lua_remove(L, 1);
+    return lua_gettop(L);
 }
 
 static int darp_luau_require_callback_trampoline(lua_State* L)
@@ -199,7 +223,14 @@ void darp_luau_pushcallback(lua_State* L, darp_luau_callback callback, void* ctx
     auto* context = new (userdata) darp_luau_callback_context_data{callback, ctx};
     (void)context;
 
-    lua_pushcclosure(L, darp_luau_callback_trampoline, debugname, 1);
+    lua_pushcclosurek(L, darp_luau_callback_trampoline, debugname, 1, darp_luau_callback_continuation);
+}
+
+int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg)
+{
+    lua_pushlightuserdata(L, &darp_luau_callback_resume_mark);
+    lua_insert(L, -(narg + 1));
+    return lua_resume(L, from, narg + 1);
 }
 
 void darp_luau_pushrequirecallback(lua_State* L, darp_luau_callback callback, void* ctx, const char* debugname)

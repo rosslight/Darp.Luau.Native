@@ -762,6 +762,9 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "darp_luau_psettable", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int darp_luau_psettable(lua_State* L, int idx);
 
+        [DllImport(__DllName, EntryPoint = "darp_luau_setinterrupt", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_setinterrupt(lua_State* L, darp_luau_interrupt* interrupt);
+
         [DllImport(__DllName, EntryPoint = "darp_luau_pushrequirecallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void darp_luau_pushrequirecallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, byte* debugname);
 
@@ -881,6 +884,13 @@ namespace Darp.Luau.Native
     public unsafe partial struct darp_luau_require_context_data
     {
         public fixed byte _unused[1];
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe partial struct darp_luau_interrupt
+    {
+        public delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback;
+        public void* ctx;
     }
 
     [StructLayout(LayoutKind.Sequential)]

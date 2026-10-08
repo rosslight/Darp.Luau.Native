@@ -27,7 +27,7 @@ enum
 typedef int (*darp_luau_callback)(lua_State* L, void* ctx);
 
 // Runs when Luau frees a function pushed by darp_luau_pushcallback: when it collects the function, or when the state
-// closes. It runs during a garbage collection, so it must not use the state.
+// closes. It runs during a garbage collection, so it must not use the state, and it must return normally.
 typedef void (*darp_luau_callback_destructor)(void* ctx);
 
 typedef int (*darp_luau_require_load_callback)(

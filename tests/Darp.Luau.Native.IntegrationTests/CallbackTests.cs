@@ -54,6 +54,36 @@ public sealed unsafe class CallbackTests
     }
 
     [Fact]
+    public void CallbackDestructorWaitsForACoroutineThatIsSuspendedInTheCallback()
+    {
+        int destructions = 0;
+        var state = luaL_newstate();
+        try
+        {
+            PushCallbackGlobal(state, &Yield, "host"u8, &destructions, &CountDestruction);
+            var thread = lua_newthread(state);
+            LoadChunk(thread, "local h = host; host = nil; local v = h(); h = nil; return v + 1"u8);
+            ((lua_Status)lua_resume(thread, null, 0)).ShouldBe(lua_Status.LUA_YIELD);
+
+            // Only the suspended call still refers to the function.
+            lua_gc(state, (int)lua_GCOp.LUA_GCCOLLECT, 0);
+            destructions.ShouldBe(0);
+
+            lua_pushinteger(thread, 41);
+            ((lua_Status)darp_luau_resumecallback(thread, null, 1)).ShouldBe(lua_Status.LUA_OK);
+            lua_tointeger(thread, -1).ShouldBe(42);
+
+            lua_gc(state, (int)lua_GCOp.LUA_GCCOLLECT, 0);
+            destructions.ShouldBe(1);
+        }
+        finally
+        {
+            lua_close(state);
+        }
+        destructions.ShouldBe(1);
+    }
+
+    [Fact]
     public void CallbackDestructorRunsWhenTheStateCloses()
     {
         int destructions = 0;

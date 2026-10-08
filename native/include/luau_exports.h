@@ -50,6 +50,17 @@ LUAU_EXPORT_API void darp_luau_pushcallback(
 // results of that callback. Returns what lua_resume returns.
 LUAU_EXPORT_API int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg);
 
+// lua_gettable and lua_settable for a host that must not let a Luau error unwind through its own frames: an
+// error raised by __index or __newindex, a frozen table, or a nil or NaN key is returned instead of raised.
+//
+// Reads t[k] for the table at `idx` and the key on top, and replaces the key with the value. Returns the type of the
+// value. On an error it replaces the key with the error object and returns the negated status.
+LUAU_EXPORT_API int darp_luau_pgettable(lua_State* L, int idx);
+
+// Does t[k] = v for the table at `idx`, the key below the top and the value on top, and pops both. Returns LUA_OK.
+// On an error it replaces both with the error object and returns the status.
+LUAU_EXPORT_API int darp_luau_psettable(lua_State* L, int idx);
+
 LUAU_EXPORT_API void darp_luau_pushrequirecallback(
     lua_State* L,
     darp_luau_callback callback,

@@ -1970,6 +1970,12 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn darp_luau_pgettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn darp_luau_psettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn darp_luau_pushrequirecallback(
         L: *mut lua_State,
         callback: darp_luau_callback,

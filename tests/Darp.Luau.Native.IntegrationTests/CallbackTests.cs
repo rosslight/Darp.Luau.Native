@@ -34,10 +34,64 @@ public sealed unsafe class CallbackTests
             status.ShouldBe(lua_Status.LUA_YIELD);
 
             lua_pushinteger(thread, 41);
-            status = (lua_Status)lua_resume(thread, null, 1);
+            status = (lua_Status)darp_luau_resumecallback(thread, null, 1);
 
             status.ShouldBe(lua_Status.LUA_OK);
             lua_tointeger(thread, -1).ShouldBe(42);
+        }
+        finally
+        {
+            lua_close(state);
+        }
+    }
+
+    [Fact]
+    public void ResumeOfAYieldedCallbackByAnyoneElseFailsAndClearsTheThreadData()
+    {
+        var state = luaL_newstate();
+        try
+        {
+            luaL_openlibs(state);
+            PushCallbackGlobal(state, &Yield, "host"u8);
+            var thread = lua_newthread(state);
+            fixed (byte* waiting = "waiting"u8)
+                lua_setglobal(state, waiting);
+            LoadChunk(thread, "local ok = pcall(host); return ok"u8);
+            lua_setthreaddata(thread, (void*)1);
+            ((lua_Status)lua_resume(thread, null, 0)).ShouldBe(lua_Status.LUA_YIELD);
+
+            // A script resumes the waiting coroutine with a value of its own.
+            LoadChunk(state, "return coroutine.resume(waiting, 'forged')"u8);
+            ((lua_Status)lua_pcall(state, 0, 2, 0)).ShouldBe(lua_Status.LUA_OK);
+
+            // The coroutine saw an error instead of the forged value, and the host lost its claim on it.
+            lua_toboolean(state, -2).ShouldBe(1);
+            lua_toboolean(state, -1).ShouldBe(0);
+            ((nint)lua_getthreaddata(thread)).ShouldBe(0);
+        }
+        finally
+        {
+            lua_close(state);
+        }
+    }
+
+    [Fact]
+    public void CallbackYieldDropsItsArgumentsBeforeItsResultsArrive()
+    {
+        var state = luaL_newstate();
+        try
+        {
+            luaL_openlibs(state);
+            PushCallbackGlobal(state, &Yield, "host"u8);
+            var thread = lua_newthread(state);
+            LoadChunk(thread, "return select('#', host(1, 2, 3))"u8);
+            ((lua_Status)lua_resume(thread, null, 0)).ShouldBe(lua_Status.LUA_YIELD);
+
+            lua_pushinteger(thread, 41);
+            var status = (lua_Status)darp_luau_resumecallback(thread, null, 1);
+
+            status.ShouldBe(lua_Status.LUA_OK);
+            lua_tointeger(thread, -1).ShouldBe(1);
         }
         finally
         {

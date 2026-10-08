@@ -301,7 +301,9 @@ static void darp_luau_interrupt_hook(lua_State* L, int gc)
 
     // lua_break would raise an error of its own here. The stack may be full at a safepoint.
     lua_rawcheckstack(L, 1);
-    luaL_error(L, "script was interrupted");
+    // Without a position: luaL_error would name the caller of the interrupted function, not the function.
+    lua_pushliteral(L, "script was interrupted");
+    lua_error(L);
 }
 
 void darp_luau_setinterrupt(lua_State* L, const darp_luau_interrupt* interrupt)

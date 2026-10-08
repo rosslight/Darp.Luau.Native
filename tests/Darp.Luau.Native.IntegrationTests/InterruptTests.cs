@@ -77,7 +77,49 @@ public sealed unsafe class InterruptTests : IDisposable
         // lua_pcall runs the chunk on the main thread, which cannot yield and so cannot break.
         ((lua_Status)lua_pcall(_state, 0, 0, 0)).ShouldBe(lua_Status.LUA_ERRRUN);
 
-        ReadString(_state, -1).ShouldContain("script was interrupted");
+        ReadString(_state, -1).ShouldBe("script was interrupted");
+    }
+
+    [Fact]
+    public void LeavesTheStateUsableAfterTheError()
+    {
+        var request = new StopRequest { SafepointsBeforeStop = 100 };
+        var interrupt = new darp_luau_interrupt { callback = &ShouldStop, ctx = &request };
+        darp_luau_setinterrupt(_state, &interrupt);
+        Load(_state, "local function spin() while true do end end spin()"u8);
+        ((lua_Status)lua_pcall(_state, 0, 0, 0)).ShouldBe(lua_Status.LUA_ERRRUN);
+        lua_settop(_state, 0);
+
+        request = new StopRequest { SafepointsBeforeStop = Never };
+        Load(_state, "local sum = 0 for i = 1, 100 do sum += i end return sum"u8);
+
+        ((lua_Status)lua_pcall(_state, 0, 1, 0)).ShouldBe(lua_Status.LUA_OK);
+        lua_tonumber(_state, -1).ShouldBe(5050);
+    }
+
+    /// <summary> Luau cannot pass the break of the coroutine on to code that cannot yield, and raises an error there. </summary>
+    [Fact]
+    public void StopsACoroutineOfTheScriptAndTheCodeThatResumedItWhereLuauCannotBreak()
+    {
+        var request = new StopRequest { SafepointsBeforeStop = 100 };
+        var interrupt = new darp_luau_interrupt { callback = &ShouldStop, ctx = &request };
+        darp_luau_setinterrupt(_state, &interrupt);
+        Load(
+            _state,
+            """
+            local endless = coroutine.wrap(function() while true do end end)
+            local ok, message = pcall(endless)
+            resume_error = message
+            while true do end
+            """u8
+        );
+
+        ((lua_Status)lua_pcall(_state, 0, 0, 0)).ShouldBe(lua_Status.LUA_ERRRUN);
+
+        ReadString(_state, -1).ShouldBe("script was interrupted");
+        fixed (byte* name = "resume_error"u8)
+            lua_getglobal(_state, name);
+        ReadString(_state, -1).ShouldContain("attempt to break across metamethod/C-call boundary");
     }
 
     [Fact]

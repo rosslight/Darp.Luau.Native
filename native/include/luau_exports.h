@@ -78,13 +78,21 @@ LUAU_EXPORT_API int darp_luau_pgettable(lua_State* L, int idx);
 LUAU_EXPORT_API int darp_luau_psettable(lua_State* L, int idx);
 
 // Lets the host stop a running script. Luau calls `interrupt->callback` at every safepoint of a script: each loop
-// iteration, call and return, and each step of a string pattern match. Once it returns nonzero, the script is stopped:
+// iteration, call and return, and each time the string pattern matcher starts to match a pattern item. Once it returns
+// nonzero, the script is stopped:
 //
 // - Where Luau can yield, the coroutine breaks: lua_resume returns LUA_BREAK. A break is not an error, so no pcall
 //   of the script sees it. The host abandons the coroutine, for example with lua_resetthread.
 // - Where Luau cannot yield, such as in lua_pcall, a metamethod or a table.sort comparator, the error
-//   "script was interrupted" is raised. A script can catch it, but for as long as the callback returns nonzero the
-//   error is raised again at its next safepoint, so the script cannot go on.
+//   "script was interrupted" is raised, without a script position. A script can catch it, but for as long as the
+//   callback returns nonzero the error is raised again at its next safepoint, so the script cannot go on.
+//
+// A coroutine that a script resumes from code that cannot yield still breaks. Luau cannot pass that break on and
+// raises its own error "attempt to break across metamethod/C-call boundary" in the resuming code instead. That code is
+// then stopped at its next safepoint like any other.
+//
+// Only safepoints are checked. Work that Luau does without reaching one is not stopped before it ends, for example a
+// single pattern item that scans a long string, or string.rep with a large count.
 //
 // The callback runs on the thread that runs the script and must return normally. `interrupt` must stay valid until
 // it is replaced or the state is closed. Null removes it, and a script then runs at full speed again.

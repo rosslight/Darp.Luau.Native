@@ -26,6 +26,10 @@ enum
 
 typedef int (*darp_luau_callback)(lua_State* L, void* ctx);
 
+// Runs when Luau frees a function pushed by darp_luau_pushcallback: when it collects the function, or when the state
+// closes. It runs during a garbage collection, so it must not use the state.
+typedef void (*darp_luau_callback_destructor)(void* ctx);
+
 typedef int (*darp_luau_require_load_callback)(
     lua_State* L,
     void* ctx,
@@ -40,10 +44,13 @@ LUAU_EXPORT_API void luau_free(void* ptr);
 // Pushes a function that calls `callback`. When the callback returns DARP_LUAU_CALLBACK_YIELD, the coroutine yields
 // and only darp_luau_resumecallback can continue it with the results of the callback. Any other resume raises an error
 // in the coroutine and clears its thread data, which tells the host that it no longer waits in the callback.
+//
+// `dtor` releases `ctx` once the function is gone. It can be null when nothing has to be released.
 LUAU_EXPORT_API void darp_luau_pushcallback(
     lua_State* L,
     darp_luau_callback callback,
     void* ctx,
+    darp_luau_callback_destructor dtor,
     const char* debugname);
 
 // Resumes a coroutine that yielded in a callback pushed by darp_luau_pushcallback. The top `narg` values become the

@@ -1936,6 +1936,8 @@ pub type darp_luau_callback = ::std::option::Option<
         ctx: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
+pub type darp_luau_callback_destructor =
+    ::std::option::Option<unsafe extern "C" fn(ctx: *mut ::std::os::raw::c_void)>;
 pub type darp_luau_require_load_callback = ::std::option::Option<
     unsafe extern "C" fn(
         L: *mut lua_State,
@@ -1959,6 +1961,7 @@ unsafe extern "C" {
         L: *mut lua_State,
         callback: darp_luau_callback,
         ctx: *mut ::std::os::raw::c_void,
+        dtor: darp_luau_callback_destructor,
         debugname: *const ::std::os::raw::c_char,
     );
 }

@@ -20,6 +20,51 @@ public sealed unsafe class CallbackTests
         return -1;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ReturnNothing(lua_State* L, void* ctx) => 0;
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void CountDestruction(void* ctx) => (*(int*)ctx)++;
+
+    [Fact]
+    public void CallbackDestructorRunsOnceWhenLuauCollectsTheFunction()
+    {
+        int destructions = 0;
+        var state = luaL_newstate();
+        try
+        {
+            fixed (byte* name = "host"u8)
+                darp_luau_pushcallback(state, &ReturnNothing, &destructions, &CountDestruction, name);
+
+            // The function is on the stack and can still be called.
+            lua_gc(state, (int)lua_GCOp.LUA_GCCOLLECT, 0);
+            destructions.ShouldBe(0);
+            lua_pushvalue(state, -1);
+            ((lua_Status)lua_pcall(state, 0, 0, 0)).ShouldBe(lua_Status.LUA_OK);
+
+            lua_settop(state, 0);
+            lua_gc(state, (int)lua_GCOp.LUA_GCCOLLECT, 0);
+            destructions.ShouldBe(1);
+        }
+        finally
+        {
+            lua_close(state);
+        }
+        destructions.ShouldBe(1);
+    }
+
+    [Fact]
+    public void CallbackDestructorRunsWhenTheStateCloses()
+    {
+        int destructions = 0;
+        var state = luaL_newstate();
+        PushCallbackGlobal(state, &ReturnNothing, "host"u8, &destructions, &CountDestruction);
+
+        lua_close(state);
+
+        destructions.ShouldBe(1);
+    }
+
     [Fact]
     public void CallbackYieldSuspendsCoroutineAndResumeValuesBecomeItsResults()
     {
@@ -124,11 +169,13 @@ public sealed unsafe class CallbackTests
     private static void PushCallbackGlobal(
         lua_State* L,
         delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback,
-        ReadOnlySpan<byte> name)
+        ReadOnlySpan<byte> name,
+        void* ctx = null,
+        delegate* unmanaged[Cdecl]<void*, void> dtor = null)
     {
         fixed (byte* pName = name)
         {
-            darp_luau_pushcallback(L, callback, null, pName);
+            darp_luau_pushcallback(L, callback, ctx, dtor, pName);
             lua_setglobal(L, pName);
         }
     }

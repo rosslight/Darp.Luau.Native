@@ -751,7 +751,7 @@ namespace Darp.Luau.Native
         public static extern void luau_free(void* ptr);
 
         [DllImport(__DllName, EntryPoint = "darp_luau_pushcallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void darp_luau_pushcallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, byte* debugname);
+        public static extern void darp_luau_pushcallback(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int> callback, void* ctx, delegate* unmanaged[Cdecl]<void*, void> dtor, byte* debugname);
 
         [DllImport(__DllName, EntryPoint = "darp_luau_resumecallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg);

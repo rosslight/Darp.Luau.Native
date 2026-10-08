@@ -11,6 +11,7 @@ struct darp_luau_callback_context_data
 {
     darp_luau_callback callback;
     void* ctx;
+    darp_luau_callback_destructor dtor;
 };
 
 struct darp_luau_require_context_data
@@ -27,6 +28,14 @@ static void darp_luau_raise_top_error(lua_State* L)
 
 // Marks a resume that delivers the result of a yielded callback. Its address is the mark, which a script cannot forge.
 static char darp_luau_callback_resume_mark;
+
+static void darp_luau_callback_context_destructor(lua_State* L, void* userdata)
+{
+    (void)L;
+    auto* context = static_cast<darp_luau_callback_context_data*>(userdata);
+    if (context->dtor)
+        context->dtor(context->ctx);
+}
 
 static int darp_luau_callback_trampoline(lua_State* L)
 {
@@ -220,10 +229,17 @@ void luau_free(void* ptr)
     free(ptr);
 }
 
-void darp_luau_pushcallback(lua_State* L, darp_luau_callback callback, void* ctx, const char* debugname)
+void darp_luau_pushcallback(
+    lua_State* L,
+    darp_luau_callback callback,
+    void* ctx,
+    darp_luau_callback_destructor dtor,
+    const char* debugname)
 {
-    void* userdata = lua_newuserdata(L, sizeof(darp_luau_callback_context_data));
-    auto* context = new (userdata) darp_luau_callback_context_data{callback, ctx};
+    // Only the function refers to this userdata, so Luau frees it once the function is gone.
+    void* userdata =
+        lua_newuserdatadtor(L, sizeof(darp_luau_callback_context_data), darp_luau_callback_context_destructor);
+    auto* context = new (userdata) darp_luau_callback_context_data{callback, ctx, dtor};
     (void)context;
 
     lua_pushcclosurek(L, darp_luau_callback_trampoline, debugname, 1, darp_luau_callback_continuation);
@@ -270,7 +286,7 @@ int darp_luau_psettable(lua_State* L, int idx)
 void darp_luau_pushrequirecallback(lua_State* L, darp_luau_callback callback, void* ctx, const char* debugname)
 {
     void* userdata = lua_newuserdata(L, sizeof(darp_luau_callback_context_data));
-    auto* context = new (userdata) darp_luau_callback_context_data{callback, ctx};
+    auto* context = new (userdata) darp_luau_callback_context_data{callback, ctx, nullptr};
     (void)context;
 
     lua_insert(L, -2);

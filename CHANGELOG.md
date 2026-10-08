@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.6.1+luau.0.741...v0.7.0+luau.0.741) (2026-10-08)
+
+
+### Features
+
+* let only the host resume a coroutine that waits in a callback ([61b3f78](https://github.com/rosslight/Darp.Luau.Native/commit/61b3f78346272f4666c9b5ead9cb85cc14f7d317))
+
 ## [0.6.1+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.6.0+luau.0.741...v0.6.1+luau.0.741) (2026-10-07)
 
 

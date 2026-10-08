@@ -18,6 +18,7 @@
   "packages": {
     ".": {
       "release-type": "simple",
+      "bump-minor-pre-major": true,
       "package-name": "Darp.Luau.Native",
       "changelog-path": "CHANGELOG.md",
       "include-v-in-tag": true,

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.8.0+luau.0.741...v0.9.0+luau.0.741) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* darp_luau_pushcallback takes a destructor for its context before the debug name. Pass null to keep the previous behaviour.
+
+### Features
+
+* let a callback release its context when Luau collects the function ([#24](https://github.com/rosslight/Darp.Luau.Native/issues/24)) ([84c4a69](https://github.com/rosslight/Darp.Luau.Native/commit/84c4a69de09c7519ae854fb6caffa60606d89359))
+
 ## [0.8.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.7.0+luau.0.741...v0.8.0+luau.0.741) (2026-10-08)
 
 

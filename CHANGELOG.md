@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.9.0+luau.0.741...v0.10.0+luau.0.741) (2026-10-08)
+
+
+### Features
+
+* let the host stop a running script, also where Luau cannot break ([#27](https://github.com/rosslight/Darp.Luau.Native/issues/27)) ([a40898d](https://github.com/rosslight/Darp.Luau.Native/commit/a40898dd470f44f0ee759f3f6051661ad426281c))
+
 ## [0.9.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.8.0+luau.0.741...v0.9.0+luau.0.741) (2026-10-08)
 
 

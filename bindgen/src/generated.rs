@@ -1989,6 +1989,46 @@ unsafe extern "C" {
         narg: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
+pub type darp_luau_member_callback = ::std::option::Option<
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        ctx: *mut ::std::os::raw::c_void,
+        member: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int,
+>;
+unsafe extern "C" {
+    pub fn darp_luau_pushmembercontext(
+        L: *mut lua_State,
+        callback: darp_luau_member_callback,
+        ctx: *mut ::std::os::raw::c_void,
+        dtor: darp_luau_callback_destructor,
+    );
+}
+unsafe extern "C" {
+    pub fn darp_luau_setmemberfunction(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+        name: *const ::std::os::raw::c_char,
+        context_idx: ::std::os::raw::c_int,
+        member: ::std::os::raw::c_int,
+    );
+}
+unsafe extern "C" {
+    pub fn darp_luau_setmemberaccess(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+        index_member: ::std::os::raw::c_int,
+        newindex_member: ::std::os::raw::c_int,
+    );
+}
+unsafe extern "C" {
+    pub fn darp_luau_newuserdatawithmetatable(
+        L: *mut lua_State,
+        size: usize,
+        tag: ::std::os::raw::c_int,
+        metatable_ref: ::std::os::raw::c_int,
+    ) -> *mut ::std::os::raw::c_void;
+}
 unsafe extern "C" {
     pub fn darp_luau_pgettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }

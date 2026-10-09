@@ -66,6 +66,43 @@ LUAU_EXPORT_API void darp_luau_pushcallback(
 // results of that callback. Returns what lua_resume returns.
 LUAU_EXPORT_API int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg);
 
+// A user type is a kind of userdata whose members the host declares up front: methods, getters and setters. Luau
+// then resolves a member by name itself, and only calls the host to run it. One callback serves every member of a
+// type; `member` tells it which one was reached.
+typedef int (*darp_luau_member_callback)(lua_State* L, void* ctx, int member);
+
+// Pushes the context that the members of one user type share. `dtor` releases `ctx` once Luau has freed every
+// function and metatable that uses the context. It can be null when nothing has to be released.
+LUAU_EXPORT_API void darp_luau_pushmembercontext(
+    lua_State* L,
+    darp_luau_member_callback callback,
+    void* ctx,
+    darp_luau_callback_destructor dtor);
+
+// Does t[name] = f for the table at `idx`, where f is a function that calls member `member` of the context at
+// `context_idx`. The function has the debug name `name`, and it yields and is resumed like one pushed by
+// darp_luau_pushcallback.
+LUAU_EXPORT_API void darp_luau_setmemberfunction(lua_State* L, int idx, const char* name, int context_idx, int member);
+
+// Gives the metatable at `idx` an __index and a __newindex that resolve the members of a user type. Expects the
+// context, the readable members and the setters on top of the stack, in that order, and pops them:
+//
+// - The readable members map a name to a function or to a member number. A function is a method: reading the name
+//   returns it, so obj:name() and obj.name(obj) are the same call, and both can yield. A member number is a getter:
+//   reading the name calls that member with the arguments of __index.
+// - The setters map a name to a member number. Writing the name calls that member with the arguments of __newindex.
+//
+// A name that is declared but cannot be used this way raises an error: reading a name that only has a setter, and
+// writing a name that only has a getter or is a method. Every other key, also one that is not a string, calls
+// `index_member` or `newindex_member`. When that is negative, reading gives nil and writing raises an error.
+//
+// A member that is called from here cannot yield.
+LUAU_EXPORT_API void darp_luau_setmemberaccess(lua_State* L, int idx, int index_member, int newindex_member);
+
+// Pushes a new userdata with the tag `tag` and the metatable that `metatable_ref` refers to, and returns its memory,
+// which is zeroed.
+LUAU_EXPORT_API void* darp_luau_newuserdatawithmetatable(lua_State* L, size_t size, int tag, int metatable_ref);
+
 // lua_gettable and lua_settable for a host that must not let a Luau error unwind through its own frames: an
 // error raised by __index or __newindex, a frozen table, or a nil or NaN key is returned instead of raised.
 //

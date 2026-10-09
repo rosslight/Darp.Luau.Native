@@ -756,6 +756,18 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "darp_luau_resumecallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int darp_luau_resumecallback(lua_State* L, lua_State* from, int narg);
 
+        [DllImport(__DllName, EntryPoint = "darp_luau_pushmembercontext", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_pushmembercontext(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, void*, int, int> callback, void* ctx, delegate* unmanaged[Cdecl]<void*, void> dtor);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_setmemberfunction", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_setmemberfunction(lua_State* L, int idx, byte* name, int context_idx, int member);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_setmemberaccess", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void darp_luau_setmemberaccess(lua_State* L, int idx, int index_member, int newindex_member);
+
+        [DllImport(__DllName, EntryPoint = "darp_luau_newuserdatawithmetatable", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void* darp_luau_newuserdatawithmetatable(lua_State* L, nuint size, int tag, int metatable_ref);
+
         [DllImport(__DllName, EntryPoint = "darp_luau_pgettable", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int darp_luau_pgettable(lua_State* L, int idx);
 

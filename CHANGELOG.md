@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.10.0+luau.0.741...v0.11.0+luau.0.741) (2026-10-09)
+
+
+### Features
+
+* let Luau resolve the members of a userdata type ([#29](https://github.com/rosslight/Darp.Luau.Native/issues/29)) ([61e1fe3](https://github.com/rosslight/Darp.Luau.Native/commit/61e1fe3a79a9731fc88a1bfcd96e8894a2604be7))
+
 ## [0.10.0+luau.0.741](https://github.com/rosslight/Darp.Luau.Native/compare/v0.9.0+luau.0.741...v0.10.0+luau.0.741) (2026-10-08)
 
 

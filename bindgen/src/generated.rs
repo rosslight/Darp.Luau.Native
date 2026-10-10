@@ -816,7 +816,11 @@ unsafe extern "C" {
     pub fn lua_hasfinalizers(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn lua_pushfinalizerfunction(L: *mut lua_State);
+    pub fn lua_pushfinalizerfunction(
+        L: *mut lua_State,
+        co: *mut lua_State,
+        toclose: ::std::os::raw::c_int,
+    );
 }
 unsafe extern "C" {
     pub fn lua_addfinalizer(L: *mut lua_State, co: *mut lua_State, idx: ::std::os::raw::c_int);
@@ -1925,10 +1929,12 @@ unsafe extern "C" {
     pub fn luarequire_createplaceholder(L: *mut lua_State);
 }
 pub const DARP_LUAU_REQUIRE_PROXY: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_REQUIRE_PROXY;
+pub const DARP_LUAU_CALLBACK_YIELD: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_CALLBACK_YIELD;
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_1 {
     DARP_LUAU_REQUIRE_PROXY = -2,
+    DARP_LUAU_CALLBACK_YIELD = -3,
 }
 pub type darp_luau_callback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -1954,7 +1960,10 @@ pub struct darp_luau_require_context_data {
 }
 pub type darp_luau_require_context = darp_luau_require_context_data;
 pub type darp_luau_interrupt_callback = ::std::option::Option<
-    unsafe extern "C" fn(L: *mut lua_State, ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1968,7 +1977,8 @@ const _: () = {
     ["Alignment of darp_luau_interrupt"][::std::mem::align_of::<darp_luau_interrupt>() - 8usize];
     ["Offset of field: darp_luau_interrupt::callback"]
         [::std::mem::offset_of!(darp_luau_interrupt, callback) - 0usize];
-    ["Offset of field: darp_luau_interrupt::ctx"][::std::mem::offset_of!(darp_luau_interrupt, ctx) - 8usize];
+    ["Offset of field: darp_luau_interrupt::ctx"]
+        [::std::mem::offset_of!(darp_luau_interrupt, ctx) - 8usize];
 };
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);
@@ -2030,10 +2040,16 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn darp_luau_pgettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+    pub fn darp_luau_pgettable(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn darp_luau_psettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+    pub fn darp_luau_psettable(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn darp_luau_setinterrupt(L: *mut lua_State, interrupt: *const darp_luau_interrupt);

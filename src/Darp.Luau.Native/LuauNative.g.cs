@@ -358,7 +358,7 @@ namespace Darp.Luau.Native
         public static extern int lua_hasfinalizers(lua_State* L);
 
         [DllImport(__DllName, EntryPoint = "lua_pushfinalizerfunction", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_pushfinalizerfunction(lua_State* L);
+        public static extern void lua_pushfinalizerfunction(lua_State* L, lua_State* co, int toclose);
 
         [DllImport(__DllName, EntryPoint = "lua_addfinalizer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_addfinalizer(lua_State* L, lua_State* co, int idx);

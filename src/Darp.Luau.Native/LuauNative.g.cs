@@ -358,7 +358,7 @@ namespace Darp.Luau.Native
         public static extern int lua_hasfinalizers(lua_State* L);
 
         [DllImport(__DllName, EntryPoint = "lua_pushfinalizerfunction", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_pushfinalizerfunction(lua_State* L);
+        public static extern void lua_pushfinalizerfunction(lua_State* L, lua_State* co, int toclose);
 
         [DllImport(__DllName, EntryPoint = "lua_addfinalizer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_addfinalizer(lua_State* L, lua_State* co, int idx);
@@ -409,7 +409,7 @@ namespace Darp.Luau.Native
         public static extern void lua_setuserdatamark(lua_State* L, int tag, delegate* unmanaged[Cdecl]<lua_State*, void*, void> markfn);
 
         [DllImport(__DllName, EntryPoint = "lua_setembeddergc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_setembeddergc(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, delegate* unmanaged[Cdecl]<lua_State*, int, void>, void> fn_);
+        public static extern void lua_setembeddergc(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, delegate* unmanaged[Cdecl]<lua_State*, int, void>, int> fn_);
 
         [DllImport(__DllName, EntryPoint = "lua_weakref", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int lua_weakref(lua_State* L, int idx);

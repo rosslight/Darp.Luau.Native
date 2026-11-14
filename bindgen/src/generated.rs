@@ -3,13 +3,14 @@
 pub const _STDINT_H: u32 = 1;
 pub const _FEATURES_H: u32 = 1;
 pub const _DEFAULT_SOURCE: u32 = 1;
-pub const __GLIBC_USE_ISOC2X: u32 = 0;
+pub const __GLIBC_USE_ISOC2Y: u32 = 0;
+pub const __GLIBC_USE_ISOC23: u32 = 0;
 pub const __USE_ISOC11: u32 = 1;
 pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
 pub const __USE_POSIX_IMPLICITLY: u32 = 1;
 pub const _POSIX_SOURCE: u32 = 1;
-pub const _POSIX_C_SOURCE: u32 = 200809;
+pub const _POSIX_C_SOURCE: u32 = 202405;
 pub const __USE_POSIX: u32 = 1;
 pub const __USE_POSIX2: u32 = 1;
 pub const __USE_POSIX199309: u32 = 1;
@@ -17,16 +18,18 @@ pub const __USE_POSIX199506: u32 = 1;
 pub const __USE_XOPEN2K: u32 = 1;
 pub const __USE_XOPEN2K8: u32 = 1;
 pub const _ATFILE_SOURCE: u32 = 1;
+pub const __USE_XOPEN2K24: u32 = 1;
 pub const __WORDSIZE: u32 = 64;
 pub const __WORDSIZE_TIME64_COMPAT32: u32 = 1;
 pub const __SYSCALL_WORDSIZE: u32 = 64;
 pub const __TIMESIZE: u32 = 64;
+pub const __USE_TIME_BITS64: u32 = 1;
 pub const __USE_MISC: u32 = 1;
 pub const __USE_ATFILE: u32 = 1;
 pub const __USE_FORTIFY_LEVEL: u32 = 0;
 pub const __GLIBC_USE_DEPRECATED_GETS: u32 = 0;
 pub const __GLIBC_USE_DEPRECATED_SCANF: u32 = 0;
-pub const __GLIBC_USE_C2X_STRTOL: u32 = 0;
+pub const __GLIBC_USE_C23_STRTOL: u32 = 0;
 pub const _STDC_PREDEF_H: u32 = 1;
 pub const __STDC_IEC_559__: u32 = 1;
 pub const __STDC_IEC_60559_BFP__: u32 = 201404;
@@ -35,17 +38,17 @@ pub const __STDC_IEC_60559_COMPLEX__: u32 = 201404;
 pub const __STDC_ISO_10646__: u32 = 201706;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
-pub const __GLIBC_MINOR__: u32 = 39;
+pub const __GLIBC_MINOR__: u32 = 43;
 pub const _SYS_CDEFS_H: u32 = 1;
 pub const __glibc_c99_flexarr_available: u32 = 1;
 pub const __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI: u32 = 0;
 pub const __HAVE_GENERIC_SELECTION: u32 = 1;
 pub const __GLIBC_USE_LIB_EXT2: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_BFP_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_BFP_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_BFP_EXT_C23: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_EXT: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_FUNCS_EXT: u32 = 0;
-pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X: u32 = 0;
+pub const __GLIBC_USE_IEC_60559_FUNCS_EXT_C23: u32 = 0;
 pub const __GLIBC_USE_IEC_60559_TYPES_EXT: u32 = 0;
 pub const _BITS_TYPES_H: u32 = 1;
 pub const _BITS_TYPESIZES_H: u32 = 1;
@@ -132,7 +135,6 @@ pub const LUA_CLASSLIBNAME: &[u8; 6] = b"class\0";
 pub const LUA_MATHLIBNAME: &[u8; 5] = b"math\0";
 pub const LUA_DBLIBNAME: &[u8; 6] = b"debug\0";
 pub const LUA_VECLIBNAME: &[u8; 7] = b"vector\0";
-pub const LUA_INTLIBNAME: &[u8; 8] = b"integer\0";
 pub const __bool_true_false_are_defined: u32 = 1;
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
@@ -304,20 +306,19 @@ pub enum lua_Type {
     LUA_TBOOLEAN = 1,
     LUA_TLIGHTUSERDATA = 2,
     LUA_TNUMBER = 3,
-    LUA_TINTEGER = 4,
-    LUA_TVECTOR = 5,
-    LUA_TSTRING = 6,
-    LUA_TTABLE = 7,
-    LUA_TFUNCTION = 8,
-    LUA_TUSERDATA = 9,
-    LUA_TTHREAD = 10,
-    LUA_TBUFFER = 11,
-    LUA_TCLASS = 12,
-    LUA_TOBJECT = 13,
-    LUA_TDEADKEY = 14,
-    LUA_TPROTO = 15,
-    LUA_TUPVAL = 16,
-    LUA_T_ALL = 17,
+    LUA_TVECTOR = 4,
+    LUA_TSTRING = 5,
+    LUA_TTABLE = 6,
+    LUA_TFUNCTION = 7,
+    LUA_TUSERDATA = 8,
+    LUA_TTHREAD = 9,
+    LUA_TBUFFER = 10,
+    LUA_TCLASS = 11,
+    LUA_TOBJECT = 12,
+    LUA_TDEADKEY = 13,
+    LUA_TPROTO = 14,
+    LUA_TUPVAL = 15,
+    LUA_T_ALL = 16,
 }
 pub type lua_Number = f64;
 pub type lua_Integer = ::std::os::raw::c_int;
@@ -378,9 +379,6 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_isstring(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn lua_isinteger64(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn lua_iscfunction(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
@@ -447,13 +445,6 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_toboolean(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn lua_tointeger64(
-        L: *mut lua_State,
-        idx: ::std::os::raw::c_int,
-        isinteger: *mut ::std::os::raw::c_int,
-    ) -> i64;
 }
 unsafe extern "C" {
     pub fn lua_tolstring(
@@ -548,9 +539,6 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn lua_pushinteger(L: *mut lua_State, n: ::std::os::raw::c_int);
-}
-unsafe extern "C" {
-    pub fn lua_pushinteger64(L: *mut lua_State, n: i64);
 }
 unsafe extern "C" {
     pub fn lua_pushunsigned(L: *mut lua_State, n: ::std::os::raw::c_uint);
@@ -745,6 +733,17 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
+    pub fn luau_loadlazy(
+        L: *mut lua_State,
+        chunkname: *const ::std::os::raw::c_char,
+        data: *const ::std::os::raw::c_char,
+        size: usize,
+        env: ::std::os::raw::c_int,
+        owner: *mut ::std::os::raw::c_void,
+        release: ::std::option::Option<unsafe extern "C" fn(owner: *mut ::std::os::raw::c_void)>,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
     pub fn lua_call(
         L: *mut lua_State,
         nargs: ::std::os::raw::c_int,
@@ -816,7 +815,11 @@ unsafe extern "C" {
     pub fn lua_hasfinalizers(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn lua_pushfinalizerfunction(L: *mut lua_State);
+    pub fn lua_pushfinalizerfunction(
+        L: *mut lua_State,
+        co: *mut lua_State,
+        toclose: ::std::os::raw::c_int,
+    );
 }
 unsafe extern "C" {
     pub fn lua_addfinalizer(L: *mut lua_State, co: *mut lua_State, idx: ::std::os::raw::c_int);
@@ -911,8 +914,9 @@ unsafe extern "C" {
 }
 pub type lua_EmbedderMark =
     ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, ref_: ::std::os::raw::c_int)>;
-pub type lua_EmbedderGc =
-    ::std::option::Option<unsafe extern "C" fn(L: *mut lua_State, markref: lua_EmbedderMark)>;
+pub type lua_EmbedderGc = ::std::option::Option<
+    unsafe extern "C" fn(L: *mut lua_State, markref: lua_EmbedderMark) -> ::std::os::raw::c_int,
+>;
 unsafe extern "C" {
     pub fn lua_setembeddergc(L: *mut lua_State, fn_: lua_EmbedderGc);
 }
@@ -991,9 +995,6 @@ unsafe extern "C" {
         result: *mut ::std::os::raw::c_void,
         b: ::std::os::raw::c_int,
     );
-}
-unsafe extern "C" {
-    pub fn lua_userdatadirectfield_setinteger64(result: *mut ::std::os::raw::c_void, n: i64);
 }
 unsafe extern "C" {
     pub fn lua_userdatadirectfield_setnil(result: *mut ::std::os::raw::c_void);
@@ -1365,17 +1366,11 @@ unsafe extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn luaL_checkinteger64(L: *mut lua_State, numArg: ::std::os::raw::c_int) -> i64;
-}
-unsafe extern "C" {
     pub fn luaL_optinteger(
         L: *mut lua_State,
         nArg: ::std::os::raw::c_int,
         def: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn luaL_optinteger64(L: *mut lua_State, nArg: ::std::os::raw::c_int, def: i64) -> i64;
 }
 unsafe extern "C" {
     pub fn luaL_checkunsigned(
@@ -1572,9 +1567,6 @@ unsafe extern "C" {
     pub fn luaopen_vector(L: *mut lua_State) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn luaopen_integer(L: *mut lua_State) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn luaL_openlibs(L: *mut lua_State);
 }
 unsafe extern "C" {
@@ -1667,9 +1659,6 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn luau_set_compile_constant_number(constant: *mut lua_CompileConstant, n: f64);
-}
-unsafe extern "C" {
-    pub fn luau_set_compile_constant_integer64(constant: *mut lua_CompileConstant, l: i64);
 }
 unsafe extern "C" {
     pub fn luau_set_compile_constant_vector(
@@ -1925,10 +1914,12 @@ unsafe extern "C" {
     pub fn luarequire_createplaceholder(L: *mut lua_State);
 }
 pub const DARP_LUAU_REQUIRE_PROXY: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_REQUIRE_PROXY;
+pub const DARP_LUAU_CALLBACK_YIELD: _bindgen_ty_1 = _bindgen_ty_1::DARP_LUAU_CALLBACK_YIELD;
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_1 {
     DARP_LUAU_REQUIRE_PROXY = -2,
+    DARP_LUAU_CALLBACK_YIELD = -3,
 }
 pub type darp_luau_callback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -1954,7 +1945,10 @@ pub struct darp_luau_require_context_data {
 }
 pub type darp_luau_require_context = darp_luau_require_context_data;
 pub type darp_luau_interrupt_callback = ::std::option::Option<
-    unsafe extern "C" fn(L: *mut lua_State, ctx: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
+    unsafe extern "C" fn(
+        L: *mut lua_State,
+        ctx: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1968,7 +1962,8 @@ const _: () = {
     ["Alignment of darp_luau_interrupt"][::std::mem::align_of::<darp_luau_interrupt>() - 8usize];
     ["Offset of field: darp_luau_interrupt::callback"]
         [::std::mem::offset_of!(darp_luau_interrupt, callback) - 0usize];
-    ["Offset of field: darp_luau_interrupt::ctx"][::std::mem::offset_of!(darp_luau_interrupt, ctx) - 8usize];
+    ["Offset of field: darp_luau_interrupt::ctx"]
+        [::std::mem::offset_of!(darp_luau_interrupt, ctx) - 8usize];
 };
 unsafe extern "C" {
     pub fn luau_free(ptr: *mut ::std::os::raw::c_void);
@@ -2030,10 +2025,16 @@ unsafe extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 unsafe extern "C" {
-    pub fn darp_luau_pgettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+    pub fn darp_luau_pgettable(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn darp_luau_psettable(L: *mut lua_State, idx: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
+    pub fn darp_luau_psettable(
+        L: *mut lua_State,
+        idx: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn darp_luau_setinterrupt(L: *mut lua_State, interrupt: *const darp_luau_interrupt);

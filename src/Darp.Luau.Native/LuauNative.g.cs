@@ -43,7 +43,6 @@ namespace Darp.Luau.Native
         public static ReadOnlySpan<byte> LUA_MATHLIBNAME => new byte[] { 109, 97, 116, 104, 0 };
         public static ReadOnlySpan<byte> LUA_DBLIBNAME => new byte[] { 100, 101, 98, 117, 103, 0 };
         public static ReadOnlySpan<byte> LUA_VECLIBNAME => new byte[] { 118, 101, 99, 116, 111, 114, 0 };
-        public static ReadOnlySpan<byte> LUA_INTLIBNAME => new byte[] { 105, 110, 116, 101, 103, 101, 114, 0 };
 
 
 
@@ -105,9 +104,6 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "lua_isstring", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int lua_isstring(lua_State* L, int idx);
 
-        [DllImport(__DllName, EntryPoint = "lua_isinteger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int lua_isinteger64(lua_State* L, int idx);
-
         [DllImport(__DllName, EntryPoint = "lua_iscfunction", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int lua_iscfunction(lua_State* L, int idx);
 
@@ -146,9 +142,6 @@ namespace Darp.Luau.Native
 
         [DllImport(__DllName, EntryPoint = "lua_toboolean", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int lua_toboolean(lua_State* L, int idx);
-
-        [DllImport(__DllName, EntryPoint = "lua_tointeger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern long lua_tointeger64(lua_State* L, int idx, int* isinteger);
 
         [DllImport(__DllName, EntryPoint = "lua_tolstring", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern byte* lua_tolstring(lua_State* L, int idx, nuint* len);
@@ -203,9 +196,6 @@ namespace Darp.Luau.Native
 
         [DllImport(__DllName, EntryPoint = "lua_pushinteger", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_pushinteger(lua_State* L, int n);
-
-        [DllImport(__DllName, EntryPoint = "lua_pushinteger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_pushinteger64(lua_State* L, long n);
 
         [DllImport(__DllName, EntryPoint = "lua_pushunsigned", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_pushunsigned(lua_State* L, uint n);
@@ -312,6 +302,9 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "luau_load", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int luau_load(lua_State* L, byte* chunkname, byte* data, nuint size, int env);
 
+        [DllImport(__DllName, EntryPoint = "luau_loadlazy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int luau_loadlazy(lua_State* L, byte* chunkname, byte* data, nuint size, int env, void* owner, delegate* unmanaged[Cdecl]<void*, void> release);
+
         [DllImport(__DllName, EntryPoint = "lua_call", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_call(lua_State* L, int nargs, int nresults);
 
@@ -358,7 +351,7 @@ namespace Darp.Luau.Native
         public static extern int lua_hasfinalizers(lua_State* L);
 
         [DllImport(__DllName, EntryPoint = "lua_pushfinalizerfunction", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_pushfinalizerfunction(lua_State* L);
+        public static extern void lua_pushfinalizerfunction(lua_State* L, lua_State* co, int toclose);
 
         [DllImport(__DllName, EntryPoint = "lua_addfinalizer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_addfinalizer(lua_State* L, lua_State* co, int idx);
@@ -409,7 +402,7 @@ namespace Darp.Luau.Native
         public static extern void lua_setuserdatamark(lua_State* L, int tag, delegate* unmanaged[Cdecl]<lua_State*, void*, void> markfn);
 
         [DllImport(__DllName, EntryPoint = "lua_setembeddergc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_setembeddergc(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, delegate* unmanaged[Cdecl]<lua_State*, int, void>, void> fn_);
+        public static extern void lua_setembeddergc(lua_State* L, delegate* unmanaged[Cdecl]<lua_State*, delegate* unmanaged[Cdecl]<lua_State*, int, void>, int> fn_);
 
         [DllImport(__DllName, EntryPoint = "lua_weakref", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int lua_weakref(lua_State* L, int idx);
@@ -443,9 +436,6 @@ namespace Darp.Luau.Native
 
         [DllImport(__DllName, EntryPoint = "lua_userdatadirectfield_setboolean", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_userdatadirectfield_setboolean(void* result, int b);
-
-        [DllImport(__DllName, EntryPoint = "lua_userdatadirectfield_setinteger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void lua_userdatadirectfield_setinteger64(void* result, long n);
 
         [DllImport(__DllName, EntryPoint = "lua_userdatadirectfield_setnil", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void lua_userdatadirectfield_setnil(void* result);
@@ -561,14 +551,8 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "luaL_checkinteger", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int luaL_checkinteger(lua_State* L, int numArg);
 
-        [DllImport(__DllName, EntryPoint = "luaL_checkinteger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern long luaL_checkinteger64(lua_State* L, int numArg);
-
         [DllImport(__DllName, EntryPoint = "luaL_optinteger", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int luaL_optinteger(lua_State* L, int nArg, int def);
-
-        [DllImport(__DllName, EntryPoint = "luaL_optinteger64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern long luaL_optinteger64(lua_State* L, int nArg, long def);
 
         [DllImport(__DllName, EntryPoint = "luaL_checkunsigned", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern uint luaL_checkunsigned(lua_State* L, int numArg);
@@ -684,9 +668,6 @@ namespace Darp.Luau.Native
         [DllImport(__DllName, EntryPoint = "luaopen_vector", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int luaopen_vector(lua_State* L);
 
-        [DllImport(__DllName, EntryPoint = "luaopen_integer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int luaopen_integer(lua_State* L);
-
         [DllImport(__DllName, EntryPoint = "luaL_openlibs", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luaL_openlibs(lua_State* L);
 
@@ -707,9 +688,6 @@ namespace Darp.Luau.Native
 
         [DllImport(__DllName, EntryPoint = "luau_set_compile_constant_number", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luau_set_compile_constant_number(void** constant, double n);
-
-        [DllImport(__DllName, EntryPoint = "luau_set_compile_constant_integer64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void luau_set_compile_constant_integer64(void** constant, long l);
 
         [DllImport(__DllName, EntryPoint = "luau_set_compile_constant_vector", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void luau_set_compile_constant_vector(void** constant, float x, float y, float z, float w);
@@ -947,20 +925,19 @@ namespace Darp.Luau.Native
         LUA_TBOOLEAN = 1,
         LUA_TLIGHTUSERDATA = 2,
         LUA_TNUMBER = 3,
-        LUA_TINTEGER = 4,
-        LUA_TVECTOR = 5,
-        LUA_TSTRING = 6,
-        LUA_TTABLE = 7,
-        LUA_TFUNCTION = 8,
-        LUA_TUSERDATA = 9,
-        LUA_TTHREAD = 10,
-        LUA_TBUFFER = 11,
-        LUA_TCLASS = 12,
-        LUA_TOBJECT = 13,
-        LUA_TDEADKEY = 14,
-        LUA_TPROTO = 15,
-        LUA_TUPVAL = 16,
-        LUA_T_ALL = 17,
+        LUA_TVECTOR = 4,
+        LUA_TSTRING = 5,
+        LUA_TTABLE = 6,
+        LUA_TFUNCTION = 7,
+        LUA_TUSERDATA = 8,
+        LUA_TTHREAD = 9,
+        LUA_TBUFFER = 10,
+        LUA_TCLASS = 11,
+        LUA_TOBJECT = 12,
+        LUA_TDEADKEY = 13,
+        LUA_TPROTO = 14,
+        LUA_TUPVAL = 15,
+        LUA_T_ALL = 16,
     }
 
     public enum lua_GCOp : uint
